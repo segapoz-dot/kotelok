@@ -1,0 +1,16 @@
+{
+  "name": "Котелок — раскладка продуктов",
+  "short_name": "Котелок",
+  "description": "Раскладка продуктов для сплавов и походов. by Sega Mega",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ebe6da",
+  "theme_color": "#1f5a75",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

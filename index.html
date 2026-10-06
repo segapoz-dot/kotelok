@@ -1,0 +1,1002 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Котелок</title>
+<meta name="description" content="Раскладка продуктов для сплавов и походов. by Sega Mega">
+<meta name="theme-color" content="#1f5a75">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Котелок">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Neucha&family=Rubik:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: river-trip field notebook — sky/cliff/river band on top, paper cards on limestone ground, orange raft color for actions */
+:root{
+  --rock:#ebe6da; --paper:#fbfaf5; --ink:#1b2a2f; --muted:#5f6b67; --line:#d8d0bf; --field:#fffefb;
+  --water:#1f5a75; --water-soft:#dde9ef; --pine:#2c5a3a; --pine-soft:#e4ece2;
+  --raft:#d65f1d; --raft-ink:#ffffff; --danger:#b2402c;
+  --sky1:#4f92c9; --sky2:#b8d8ee; --cloud:rgba(255,255,255,.75); --cliff:#d3cab6; --cliff2:#a99f8a;
+  --hill:#6a9470; --forest:#2f5a3b; --river:#2a6b88; --river2:#5c9db9; --hero-ink:#ffffff;
+  --display:"Neucha","Segoe Print","Comic Sans MS",cursive;
+  --body:"Rubik",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --rock:#0f181c; --paper:#16232a; --ink:#e3eae6; --muted:#90a19b; --line:#29404a; --field:#111c21;
+  --water:#7cbad8; --water-soft:#183039; --pine:#86c095; --pine-soft:#1b2c25;
+  --raft:#f08a4b; --raft-ink:#1a1006; --danger:#e8846f;
+  --sky1:#0c2131; --sky2:#294f68; --cloud:rgba(255,255,255,.12); --cliff:#4b504d; --cliff2:#353a38;
+  --hill:#23412d; --forest:#142a1c; --river:#11384a; --river2:#22607a; --hero-ink:#f3f6f4; color-scheme:dark}}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--rock);color:var(--ink);font:14px/1.4 var(--body);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.wrap{max-width:860px;margin:0 auto;padding-inline:16px}
+button,input,select{font:inherit;color:inherit}
+input,select{background:var(--field);border:1px solid var(--line);border-radius:6px;padding:5px 7px;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--raft);outline-offset:1px}
+input:focus{border-color:var(--water)}
+button{-webkit-tap-highlight-color:transparent}
+
+/* шапка */
+.hero{position:relative;height:calc(124px + env(safe-area-inset-top,0px));overflow:hidden;color:var(--hero-ink)}
+.hero svg{position:absolute;inset:0;width:100%;height:100%}
+.hero .wrap{position:relative;height:100%;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-block:calc(14px + env(safe-area-inset-top,0px)) 14px}
+.brand{display:flex;align-items:center;gap:10px;text-shadow:0 1px 3px rgba(0,0,0,.35)}
+.brand svg{position:static;width:40px;height:40px;flex:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))}
+.brand h1{font:400 38px/1 var(--display);margin:0;letter-spacing:.5px}
+.brand p{margin:2px 0 0;font-size:13px;opacity:.95}
+.hero-r{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.by{font:400 15px var(--display);opacity:.95;text-shadow:0 1px 3px rgba(0,0,0,.35)}
+.sync{font-size:12px;background:rgba(0,0,0,.3);color:#fff;border:none;padding:4px 10px;border-radius:20px;white-space:nowrap;cursor:pointer}
+
+/* панель */
+.bar{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding-block:7px}
+#trip{font-weight:600;max-width:230px}
+.ib{background:none;border:none;color:var(--muted);cursor:pointer;padding:5px 8px;border-radius:6px;line-height:1;font-size:15px}
+.ib:hover{background:var(--line);color:var(--ink)}
+.ib.danger:hover{color:var(--danger)}
+.tabs{display:flex;gap:2px;margin-left:4px}
+.tabs button{background:none;border:none;border-bottom:3px solid transparent;padding:6px 10px;cursor:pointer;font-weight:600;color:var(--muted)}
+.tabs button.on{color:var(--ink);border-color:var(--raft)}
+.badge{display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:var(--water-soft);color:var(--water);font-size:11px;text-align:center}
+.sp{flex:1}
+.btn{background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:6px 11px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--water)}
+.btn.primary{background:var(--raft);color:var(--raft-ink);border-color:var(--raft);font-weight:600}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:var(--raft-ink)}
+.btn svg{width:15px;height:15px}
+
+main{padding-block:6px 30px}
+.hint{color:var(--muted);font-size:12px;margin:10px 2px}
+.install{background:var(--water-soft);color:var(--ink);border-radius:10px;padding:10px 12px;margin:12px 0 0;display:flex;gap:10px;align-items:center;font-size:13px}
+
+/* меню */
+.day{background:var(--paper);border:1px solid var(--line);border-radius:10px;margin:12px 0;overflow:hidden}
+.day-head{display:flex;gap:2px;align-items:center;padding:5px 6px;background:var(--pine-soft);border-bottom:1px solid var(--line)}
+.day-name{font:400 21px/1.1 var(--display);color:var(--pine);flex:1;background:transparent;border-color:transparent}
+.count{color:var(--muted);font-size:12px;white-space:nowrap;margin-right:4px}
+.chev{transition:transform .15s}
+.collapsed .day-body{display:none}
+.collapsed .day-head{border-bottom:none}
+.collapsed .chev{transform:rotate(-90deg)}
+.meal{padding:7px 9px;border-top:1px dashed var(--line)}
+.meal:first-child{border-top:none}
+.row{display:flex;gap:4px;align-items:center}
+.meal-name{font-weight:600;width:170px;color:var(--water)}
+.dish{margin:5px 0 3px 16px;padding-left:9px;border-left:3px solid var(--water-soft)}
+.dish-name{font-style:italic;flex:1;max-width:300px;border-color:transparent;background:transparent}
+.item{display:grid;grid-template-columns:minmax(0,1fr) 64px 64px 28px;gap:4px;margin:3px 0}
+.item input{padding:3px 7px}
+.item .q{text-align:right;font-variant-numeric:tabular-nums}
+.add{background:none;border:1px dashed var(--line);color:var(--water);border-radius:6px;padding:3px 10px;cursor:pointer;font-size:13px}
+.add.big{display:block;width:100%;padding:11px;margin-top:12px;font-size:14px}
+
+/* продукты */
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin:12px 0;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.panel label{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-size:13px}
+.panel input.n{width:56px;text-align:right}
+.factor{font-weight:700;color:var(--raft)}
+.stats{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 2px;font-size:13px;color:var(--muted)}
+.stats b{color:var(--ink);font-size:16px}
+.filters{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
+.filters input[type=search]{flex:1;min-width:140px}
+.filters label{font-size:13px;white-space:nowrap}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+table{width:100%;border-collapse:collapse}
+th,td{padding:5px 7px;border-top:1px solid var(--line);vertical-align:middle}
+th{text-align:left;color:var(--muted);font-weight:500;font-size:12px;border-top:none;background:var(--water-soft)}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.price input{width:72px;text-align:right;padding:2px 6px}
+tr.done td:not(:first-child){opacity:.45}
+tr.done .pname{text-decoration:line-through}
+tfoot td{font-weight:700;background:var(--water-soft)}
+summary{cursor:pointer;list-style:none}
+summary::-webkit-details-marker{display:none}
+.pname{font-weight:500}
+.uses{color:var(--muted);font-size:11px}
+details ul{margin:2px 0;padding-left:16px;color:var(--muted);font-size:12px}
+.was{color:var(--muted);font-size:11px;font-weight:400}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--raft)}
+
+.empty{background:var(--paper);border:1px dashed var(--line);border-radius:12px;text-align:center;padding:34px 16px;margin:16px 0}
+.empty h2{font:400 26px var(--display);margin:0 0 6px;color:var(--pine)}
+.empty p{color:var(--muted);margin:0 0 14px}
+.empty .row{justify-content:center;flex-wrap:wrap;gap:8px}
+
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-block:14px 24px}
+footer .sig{font:400 17px var(--display);color:var(--water)}
+
+/* окна */
+.modal{position:fixed;inset:0;z-index:20;background:rgba(10,20,25,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.sheet{background:var(--paper);color:var(--ink);border-radius:12px;padding:16px;width:min(400px,100%);box-shadow:0 10px 40px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:10px;max-height:90vh;overflow:auto}
+.sheet h3{margin:0;font:400 24px var(--display);color:var(--pine)}
+.sheet p{margin:0;color:var(--muted);white-space:pre-line}
+.sheet .opts{display:flex;flex-direction:column;gap:6px}
+.sheet .opts .btn{justify-content:flex-start;padding:10px 12px}
+.mbtns{display:flex;justify-content:flex-end;gap:8px}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--paper);padding:9px 14px;border-radius:9px;font-size:13px;max-width:calc(100% - 32px);box-shadow:0 4px 18px rgba(0,0,0,.25)}
+#pdfroot{position:fixed;left:-10000px;top:0;width:760px}
+
+@media (max-width:640px){
+  .hero{height:calc(108px + env(safe-area-inset-top,0px))}
+  .brand h1{font-size:32px}
+  .brand p{display:none}
+  .tabs{margin-left:0;width:100%}
+  .dish{margin-left:0;padding-left:6px}
+  .meal-name{width:140px}
+  /* 16px — чтобы iPhone не увеличивал страницу при вводе */
+  input,select{font-size:16px}
+  .day-name{font-size:22px}
+  .item{grid-template-columns:minmax(0,1fr) 54px 54px 26px;gap:3px}
+  .item input{padding:4px 5px}
+  td.price input{width:62px}
+  th,td{padding:5px 4px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <svg viewBox="0 0 1200 140" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="g-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--sky1)"/><stop offset="1" style="stop-color:var(--sky2)"/></linearGradient>
+      <linearGradient id="g-river" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--river2)"/><stop offset="1" style="stop-color:var(--river)"/></linearGradient>
+    </defs>
+    <rect width="1200" height="140" fill="url(#g-sky)"/>
+    <g style="fill:var(--cloud)">
+      <ellipse cx="520" cy="34" rx="70" ry="16"/><ellipse cx="575" cy="26" rx="44" ry="16"/>
+      <ellipse cx="860" cy="22" rx="60" ry="12"/><ellipse cx="1010" cy="40" rx="50" ry="10"/>
+    </g>
+    <path d="M0 112 Q150 80 320 96 T640 88 T900 96 L900 140 L0 140Z" style="fill:var(--hill)" opacity=".8"/>
+    <g id="pines" style="fill:var(--forest)"></g>
+    <path d="M1200 140 L1200 14 L1160 8 L1132 26 L1110 18 L1082 44 L1068 40 L1046 78 L1030 96 L1018 140Z" style="fill:var(--cliff)"/>
+    <path d="M1160 8 L1150 60 L1158 112 M1110 18 L1102 70 L1112 120 M1068 40 L1066 90" style="stroke:var(--cliff2);fill:none" stroke-width="3" opacity=".7"/>
+    <rect y="114" width="1200" height="26" fill="url(#g-river)"/>
+    <g style="stroke:var(--sky2)" stroke-width="2" stroke-linecap="round" opacity=".55">
+      <path d="M60 124h50M260 130h70M480 122h40M700 132h60M940 124h50M1080 130h60"/>
+    </g>
+    <g transform="translate(790 112)">
+      <rect x="-26" y="2" width="52" height="8" rx="4" style="fill:var(--raft)"/>
+      <circle cx="-6" cy="-5" r="3.5" style="fill:var(--ink)" opacity=".85"/>
+      <path d="M-6 -2 v5" style="stroke:var(--ink)" stroke-width="3" opacity=".85"/>
+      <path d="M-20 -6 L8 10" style="stroke:var(--ink)" stroke-width="1.6" opacity=".8"/>
+    </g>
+  </svg>
+  <div class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M18 9c-2 3 2 4 0 7M24 7c-2 3 2 4 0 7M30 9c-2 3 2 4 0 7" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".9"/>
+        <path d="M10 22c0-2 28-2 28 0" fill="none" stroke="#fff" stroke-width="2.4"/>
+        <path d="M8 22h32l-3 16a5 5 0 0 1-5 4H16a5 5 0 0 1-5-4z" fill="#d65f1d" stroke="#fff" stroke-width="2.2"/>
+        <path d="M6 23c-3 0-3 5 1 5M42 23c3 0 3 5-1 5" fill="none" stroke="#fff" stroke-width="2.2"/>
+      </svg>
+      <div>
+        <h1>Котелок</h1>
+        <p>раскладка продуктов для сплавов и походов</p>
+      </div>
+    </div>
+    <div class="hero-r">
+      <span class="by">by Sega Mega</span>
+      <button class="sync" id="sync" data-act="syncMenu">на этом устройстве</button>
+    </div>
+  </div>
+</header>
+
+<div class="bar"><div class="wrap">
+  <select id="trip" aria-label="Поход"></select>
+  <button class="ib" data-act="newTrip" title="Новый поход" aria-label="Новый поход">＋</button>
+  <button class="ib" data-act="renameTrip" title="Переименовать поход" aria-label="Переименовать поход">✎</button>
+  <button class="ib danger" data-act="delTrip" title="Удалить поход" aria-label="Удалить поход">🗑</button>
+  <nav class="tabs">
+    <button data-tab="menu">Меню</button>
+    <button data-tab="list">Продукты <span class="badge" id="pcount">0</span></button>
+  </nav>
+  <span class="sp"></span>
+  <button class="btn primary" data-act="exportMenu">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 1.5h5l3 3v10H4z"/><path d="M8 7v5M5.8 9.8 8 12l2.2-2.2"/></svg>
+    Сохранить PDF
+  </button>
+</div></div>
+
+<div class="wrap">
+  <div class="install" id="install" hidden>
+    <span>Поставьте Котелок на экран телефона: внизу Safari нажмите «Поделиться» <b>⎋</b>, затем «На экран Домой».</span>
+    <button class="ib" data-act="hideInstall" aria-label="Скрыть">✕</button>
+  </div>
+  <main id="menu"></main>
+  <main id="list" hidden></main>
+</div>
+
+<footer><div class="wrap">
+  <span class="sig">Котелок · придумал Sega Mega</span>
+  <span class="sp"></span>
+  <button class="btn" data-act="syncMenu">Яндекс Диск</button>
+  <button class="btn" data-act="backup">Сохранить копию</button>
+  <button class="btn" data-act="restore">Открыть файл</button>
+  <button class="btn" data-act="sample">Пример похода</button>
+  <input type="file" id="file" accept=".json,application/json" hidden>
+</div></footer>
+
+<div class="modal" id="modal" hidden>
+  <form class="sheet" id="mform">
+    <h3 id="mtitle"></h3>
+    <p id="mtext"></p>
+    <input id="minput" autocomplete="off">
+    <div class="opts" id="mopts"></div>
+    <div class="mbtns"><button type="button" class="btn" id="mcancel">Отмена</button><button class="btn primary" id="mok">OK</button></div>
+  </form>
+</div>
+<div class="toast" id="toast" hidden></div>
+<div id="pdfroot" aria-hidden="true"></div>
+
+<script>
+// ===== Настройка Яндекс Диска =====
+// ClientID приложения с https://oauth.yandex.ru (права: «Доступ к папке приложения на Диске»).
+const YANDEX_CLIENT_ID = '';
+
+const MEALS = ['завтрак','обед','ужин','перекус','на катамаране','выход','допы','нз'];
+const UNITS = ['шт','кг','г','л','уп','банка','пачка','бутылка'];
+const LS = 'kotelok-v1', LS_TOKEN = 'kotelok-ya', YA_FILE = 'app:/kotelok.json';
+
+const uid = () => Math.random().toString(36).slice(2, 10);
+const low = s => String(s || '').toLowerCase().replace(/ё/g, 'е');
+const norm = s => low(s).replace(/\s+/g, ' ').trim();
+const num = v => { const n = parseFloat(String(v ?? '').replace(',', '.').replace(/\s/g, '')); return isFinite(n) ? n : 0; };
+const fmt = n => (Math.round(n * 100) / 100).toLocaleString('ru-RU');
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const $ = s => document.querySelector(s);
+const stable = v => Array.isArray(v) ? '[' + v.map(stable).join(',') + ']'
+  : v && typeof v === 'object' ? '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + stable(v[k])).join(',') + '}'
+  : JSON.stringify(v ?? null);
+const safeName = s => String(s).replace(/[\\/:*?"<>|]/g, '_').trim() || 'поход';
+const hhmm = ts => new Date(ts).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+const isPhone = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+
+// ---------- состояние ----------
+let TRIPS = [], PRICES = {}, PRICES_AT = 0, DELETED = {};
+let UI = { current: null, tab: 'menu', collapsed: {}, docPrices: true, hideInstall: false };
+let LV = { q: '', sort: 'az', hideBought: false };
+let yaToken = '';
+const SYNC = { state: 'off', at: 0 };
+
+const newItem = () => ({ id: uid(), name: '', qty: '', unit: '' });
+const newDish = () => ({ id: uid(), name: '', items: [newItem()] });
+const newMeal = name => ({ id: uid(), name: name || '', dishes: [newDish()] });
+const newDay = name => ({ id: uid(), name: name || '', meals: ['завтрак', 'обед', 'ужин'].map(newMeal) });
+const newTrip = name => ({ id: uid(), name, created: Date.now(), updated: Date.now(), basePeople: '', people: '', bought: [], days: [newDay('День 1')] });
+function normTrip(t) {
+  t.days ||= [];
+  t.bought = Array.isArray(t.bought) ? t.bought : Object.keys(t.bought || {}).filter(k => t.bought[k]);
+  t.basePeople ??= ''; t.people ??= ''; t.created ||= Date.now(); t.updated ||= t.created;
+  return t;
+}
+const sortTrips = () => TRIPS.sort((a, b) => a.created - b.created);
+const trip = () => TRIPS.find(t => t.id === UI.current) || TRIPS[0];
+
+function loadLocal() {
+  try {
+    const s = JSON.parse(localStorage.getItem(LS));
+    if (s) {
+      TRIPS = (s.trips || []).map(normTrip); PRICES = s.prices || {}; PRICES_AT = s.pricesAt || 0;
+      DELETED = s.deleted || {}; Object.assign(UI, s.ui || {}); sortTrips();
+    }
+    yaToken = localStorage.getItem(LS_TOKEN) || '';
+  } catch (e) {}
+}
+function saveLocal() {
+  try { localStorage.setItem(LS, JSON.stringify({ trips: TRIPS, prices: PRICES, pricesAt: PRICES_AT, deleted: DELETED, ui: UI })); }
+  catch (e) { toast('Не удалось сохранить на устройстве — памяти браузера не хватает.'); }
+}
+const touch = t => { t.updated = Date.now(); saveLocal(); syncSoon(); };
+const touchPrices = () => { PRICES_AT = Date.now(); saveLocal(); syncSoon(); };
+
+// ---------- Яндекс Диск ----------
+const yaRedirect = () => location.origin + location.pathname;
+function yaAuthUrl(manual) {
+  return 'https://oauth.yandex.ru/authorize?response_type=token&client_id=' + encodeURIComponent(YANDEX_CLIENT_ID)
+    + '&redirect_uri=' + encodeURIComponent(manual ? 'https://oauth.yandex.ru/verification_code' : yaRedirect());
+}
+async function yaApi(path, opts = {}) {
+  const r = await fetch('https://cloud-api.yandex.net/v1/disk' + path, { ...opts, headers: { Authorization: 'OAuth ' + yaToken, Accept: 'application/json' } });
+  if (r.status === 401 || r.status === 403) throw 'auth';
+  return r;
+}
+async function yaDownload() {
+  const r = await yaApi('/resources/download?path=' + encodeURIComponent(YA_FILE));
+  if (r.status === 404) return null;
+  if (!r.ok) throw 'net';
+  const { href } = await r.json();
+  const f = await fetch(href);
+  if (!f.ok) throw 'net';
+  return JSON.parse(await f.text());
+}
+async function yaUpload(data) {
+  const r = await yaApi('/resources/upload?overwrite=true&path=' + encodeURIComponent(YA_FILE));
+  if (!r.ok) throw 'net';
+  const { href } = await r.json();
+  const u = await fetch(href, { method: 'PUT', body: new Blob([JSON.stringify(data)], { type: 'application/json' }) });
+  if (!u.ok) throw 'net';
+}
+const sig = d => stable({ trips: [...(d.trips || [])].map(normTrip).sort((a, b) => a.id < b.id ? -1 : 1), prices: d.prices || {}, pricesAt: d.pricesAt || 0, deleted: d.deleted || {} });
+function merge(r) {
+  const del = { ...DELETED };
+  for (const [id, ts] of Object.entries(r.deleted || {})) del[id] = Math.max(del[id] || 0, ts);
+  const map = new Map();
+  for (const t of r.trips || []) map.set(t.id, normTrip(t));
+  for (const t of TRIPS) { const o = map.get(t.id); if (!o || t.updated >= o.updated) map.set(t.id, t); }
+  for (const [id, ts] of Object.entries(del)) { const t = map.get(id); if (t && t.updated <= ts) map.delete(id); }
+  const old = Date.now() - 365 * 864e5;
+  for (const id of Object.keys(del)) if (del[id] < old) delete del[id];
+  const remoteNewer = (r.pricesAt || 0) > PRICES_AT;
+  return { trips: [...map.values()], prices: remoteNewer ? (r.prices || {}) : PRICES, pricesAt: remoteNewer ? r.pricesAt : PRICES_AT, deleted: del };
+}
+let syncing = false, syncAgain = false, syncTimer;
+function syncSoon(ms = 3000) { if (!yaToken) return; clearTimeout(syncTimer); syncTimer = setTimeout(() => sync(), ms); }
+async function sync(manual) {
+  if (!yaToken) return;
+  if (syncing) { syncAgain = true; return; }
+  syncing = true; SYNC.state = 'sync'; setStatus();
+  try {
+    const remote = await yaDownload();
+    const before = sig({ trips: TRIPS, prices: PRICES, pricesAt: PRICES_AT, deleted: DELETED });
+    const m = merge(remote || {});
+    const localChanged = sig(m) !== before;
+    TRIPS = m.trips; PRICES = m.prices; PRICES_AT = m.pricesAt; DELETED = m.deleted; sortTrips(); saveLocal();
+    const body = { app: 'kotelok', v: 1, trips: TRIPS, prices: PRICES, pricesAt: PRICES_AT, deleted: DELETED };
+    if (!remote || sig(remote) !== sig(body)) await yaUpload({ ...body, savedAt: Date.now() });
+    SYNC.state = 'ok'; SYNC.at = Date.now();
+    if (localChanged) renderKeepFocus();
+    if (manual) toast('Синхронизировано с Яндекс Диском');
+  } catch (e) {
+    if (e === 'auth') {
+      yaToken = ''; try { localStorage.removeItem(LS_TOKEN); } catch (x) {}
+      SYNC.state = 'auth'; toast('Вход в Яндекс истёк. Подключите Диск заново — данные на устройстве целы.');
+    } else {
+      SYNC.state = 'offline';
+      if (manual) toast('Нет связи с Яндекс Диском. Всё сохранено на этом устройстве.');
+    }
+  }
+  syncing = false; setStatus();
+  if (syncAgain) { syncAgain = false; syncSoon(500); }
+}
+function setStatus() {
+  const el = $('#sync');
+  el.textContent = !yaToken ? (SYNC.state === 'auth' ? '⚠ войдите в Яндекс' : 'на этом устройстве')
+    : SYNC.state === 'sync' ? 'синхронизирую…'
+    : SYNC.state === 'ok' ? '☁ Яндекс Диск · ' + hhmm(SYNC.at)
+    : SYNC.state === 'offline' ? 'нет связи · сохранено здесь'
+    : '☁ Яндекс Диск';
+}
+function readOAuthReturn() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get('access_token')) {
+    yaToken = h.get('access_token');
+    try { localStorage.setItem(LS_TOKEN, yaToken); } catch (e) {}
+    history.replaceState(null, '', location.pathname + location.search);
+    toast('Яндекс Диск подключён');
+  } else if (h.get('error')) {
+    history.replaceState(null, '', location.pathname + location.search);
+    toast('Вход в Яндекс не выполнен');
+  }
+}
+async function syncMenu() {
+  if (!YANDEX_CLIENT_ID) {
+    await ask({ title: 'Яндекс Диск', text: 'Синхронизация ещё не настроена автором приложения.\nПока переносите походы файлом: «Сохранить копию» → «Открыть файл» на другом устройстве.', ok: 'Понятно' });
+    return;
+  }
+  if (!yaToken) {
+    const v = await ask({ title: 'Яндекс Диск', text: 'Подключите Яндекс Диск — походы будут одинаковыми на телефоне и компьютере.\nФайл хранится в папке «Приложения» на вашем Диске, больше приложение ничего не видит.', options: [
+      { label: 'Войти через Яндекс', value: 'login' },
+      { label: 'Вход не вернул в приложение? Вставить код', value: 'manual' }] });
+    if (v === 'login') location.href = yaAuthUrl(false);
+    if (v === 'manual') {
+      window.open(yaAuthUrl(true), '_blank');
+      const code = await ask({ title: 'Код от Яндекса', text: 'Войдите в Яндекс в открывшемся окне, скопируйте показанный код и вставьте сюда.', input: 'код', ok: 'Подключить' });
+      if (code) { yaToken = code.trim(); try { localStorage.setItem(LS_TOKEN, yaToken); } catch (e) {} sync(true); }
+    }
+    return;
+  }
+  const v = await ask({ title: 'Яндекс Диск', text: SYNC.at ? 'Последняя синхронизация: ' + hhmm(SYNC.at) : 'Подключено.', options: [
+    { label: 'Синхронизировать сейчас', value: 'now' }, { label: 'Отключить Яндекс Диск на этом устройстве', value: 'off' }] });
+  if (v === 'now') sync(true);
+  if (v === 'off') { yaToken = ''; try { localStorage.removeItem(LS_TOKEN); } catch (e) {} SYNC.state = 'off'; setStatus(); toast('Отключено. Походы остались на устройстве.'); }
+}
+
+// ---------- окна и уведомления ----------
+function ask({ title, text = '', input = null, value = '', ok = 'OK', danger = false, options = null }) {
+  return new Promise(res => {
+    const m = $('#modal'), f = $('#mform'), i = $('#minput'), opts = $('#mopts');
+    $('#mtitle').textContent = title; $('#mtext').textContent = text; $('#mtext').hidden = !text;
+    i.hidden = input === null; i.placeholder = input || ''; i.value = value;
+    opts.innerHTML = ''; opts.hidden = !options;
+    (options || []).forEach(o => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (o.primary ? ' primary' : ''); b.textContent = o.label;
+      b.onclick = () => { if (o.run) o.run(); done(o.value); };
+      opts.appendChild(b);
+    });
+    $('#mok').hidden = !!options; $('#mok').textContent = ok; $('#mok').className = 'btn ' + (danger ? 'danger' : 'primary');
+    m.hidden = false;
+    if (input !== null) setTimeout(() => { i.focus(); i.select(); }, 30);
+    function done(v) { m.hidden = true; f.onsubmit = null; $('#mcancel').onclick = null; m.onclick = null; res(v); }
+    f.onsubmit = e => { e.preventDefault(); done(input !== null ? (i.value.trim() || null) : true); };
+    $('#mcancel').onclick = () => done(null);
+    m.onclick = e => { if (e.target === m) done(null); };
+  });
+}
+let toastT;
+function toast(msg, sticky) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastT); if (!sticky) toastT = setTimeout(() => t.hidden = true, 3500);
+}
+
+// ---------- поиск объектов ----------
+function ctx(el) {
+  const t = trip();
+  const day = t?.days.find(d => d.id === el.closest('[data-day]')?.dataset.day);
+  const meal = day?.meals.find(m => m.id === el.closest('[data-meal]')?.dataset.meal);
+  const dish = meal?.dishes.find(d => d.id === el.closest('[data-dish]')?.dataset.dish);
+  const item = dish?.items.find(i => i.id === el.closest('[data-item]')?.dataset.item);
+  return { t, day, meal, dish, item };
+}
+const filled = i => norm(i.name) !== '';
+const dayCount = d => d.meals.reduce((a, m) => a + m.dishes.reduce((b, ds) => b + ds.items.filter(filled).length, 0), 0);
+
+// ---------- автодополнение как в Excel ----------
+function words(field, skipId) {
+  const cnt = new Map();
+  const add = (s, w = 1) => { const k = norm(s); if (!k) return; const r = cnt.get(k); if (r) r.n += w; else cnt.set(k, { text: String(s).trim(), n: w }); };
+  if (field === 'meal') MEALS.forEach(m => add(m, 0.5));
+  if (field === 'unit') UNITS.forEach(u => add(u, 0.5));
+  for (const t of TRIPS) for (const d of t.days) for (const m of d.meals) {
+    if (field === 'meal') add(m.name);
+    for (const ds of m.dishes) {
+      if (field === 'dish') add(ds.name);
+      if (field === 'name' || field === 'unit') for (const i of ds.items) if (i.id !== skipId) add(field === 'name' ? i.name : i.unit);
+    }
+  }
+  return [...cnt.values()].sort((a, b) => b.n - a.n || a.text.localeCompare(b.text, 'ru'));
+}
+function autocomplete(el, e) {
+  const f = el.dataset.f;
+  if (!['name', 'meal', 'unit', 'dish'].includes(f)) return;
+  if (e.isComposing || !String(e.inputType || '').startsWith('insert')) return;
+  const v = el.value;
+  if (!v.trim() || el.selectionStart !== v.length) return;
+  const hit = words(f, el.closest('[data-item]')?.dataset.item).find(w => low(w.text).startsWith(low(v)) && w.text.length > v.length);
+  if (!hit) return;
+  el.value = v + hit.text.slice(v.length);
+  el.setSelectionRange(v.length, el.value.length);
+}
+
+// ---------- меню ----------
+const inp = (f, k, val, ph, cls = '') => `<input data-f="${f}" data-k="${f}:${k}" class="${cls}" value="${esc(val)}" placeholder="${ph}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">`;
+function itemHTML(i) {
+  return `<div class="item" data-item="${i.id}">
+    ${inp('name', i.id, i.name, 'продукт')}
+    <input data-f="qty" data-k="qty:${i.id}" class="q" value="${esc(i.qty)}" inputmode="decimal" placeholder="кол-во" autocomplete="off">
+    ${inp('unit', i.id, i.unit, 'ед.')}
+    <button class="ib danger" data-act="delItem" title="Удалить продукт" aria-label="Удалить продукт" tabindex="-1">✕</button>
+  </div>`;
+}
+function dishHTML(ds) {
+  return `<div class="dish" data-dish="${ds.id}">
+    <div class="row">${inp('dish', ds.id, ds.name, 'блюдо (можно не писать)', 'dish-name')}
+      <button class="ib danger" data-act="delDish" title="Удалить блюдо" aria-label="Удалить блюдо" tabindex="-1">✕</button></div>
+    ${ds.items.map(itemHTML).join('')}
+    <button class="add" data-act="addItem">+ продукт</button>
+  </div>`;
+}
+function mealHTML(m) {
+  return `<div class="meal" data-meal="${m.id}">
+    <div class="row">${inp('meal', m.id, m.name, 'приём пищи', 'meal-name')}<span class="sp"></span>
+      <button class="add" data-act="addDish">+ блюдо</button>
+      <button class="ib danger" data-act="delMeal" title="Удалить приём пищи" aria-label="Удалить приём пищи" tabindex="-1">✕</button></div>
+    ${m.dishes.map(dishHTML).join('')}
+  </div>`;
+}
+function dayHTML(d) {
+  return `<section class="day ${UI.collapsed[d.id] ? 'collapsed' : ''}" data-day="${d.id}">
+    <div class="day-head">
+      <button class="ib chev" data-act="toggleDay" title="Свернуть / развернуть" aria-label="Свернуть день">▾</button>
+      ${inp('day', d.id, d.name, 'День (Понедельник, 9 мая…)', 'day-name')}
+      <span class="count" data-count>${dayCount(d)} прод.</span>
+      <button class="ib" data-act="upDay" title="Выше" aria-label="Выше">↑</button>
+      <button class="ib" data-act="downDay" title="Ниже" aria-label="Ниже">↓</button>
+      <button class="ib" data-act="copyDay" title="Скопировать день" aria-label="Скопировать день">⧉</button>
+      <button class="ib danger" data-act="delDay" title="Удалить день" aria-label="Удалить день">✕</button>
+    </div>
+    <div class="day-body">
+      ${d.meals.map(mealHTML).join('')}
+      <div class="meal"><button class="add" data-act="addMeal">+ приём пищи</button></div>
+    </div>
+  </section>`;
+}
+function emptyHTML() {
+  return `<div class="empty"><h2>Пока ни одного похода</h2>
+    <p>Создайте поход: дни → завтрак, обед, ужин → блюда → продукты. Котелок сам сложит одинаковые продукты в список закупки.</p>
+    <div class="row"><button class="btn primary" data-act="newTrip">Создать поход</button><button class="btn" data-act="sample">Открыть пример «Юрюзань»</button></div></div>`;
+}
+function renderMenu() {
+  const t = trip();
+  if (!t) { $('#menu').innerHTML = emptyHTML(); return; }
+  $('#menu').innerHTML = `
+    <p class="hint">Начните писать продукт — он допишется сам, как в Excel. Enter — принять слово и перейти к количеству. Enter в количестве — новая строка.</p>
+    ${t.days.map(dayHTML).join('')}
+    <button class="add big" data-act="addDay">+ Добавить день</button>`;
+}
+
+// ---------- сводка продуктов ----------
+const factor = t => { const b = num(t.basePeople), p = num(t.people); return b > 0 && p > 0 ? p / b : 1; };
+function adj(q, f) {
+  if (f === 1) return q;
+  const v = q * f;
+  return Number.isInteger(Math.round(q * 1000) / 1000) ? Math.ceil(v - 1e-9) : Math.ceil(v * 10 - 1e-9) / 10;
+}
+function aggregate(t) {
+  const map = new Map(); let order = 0; const f = factor(t);
+  for (const d of t.days) for (const m of d.meals) for (const ds of m.dishes) for (const i of ds.items) {
+    if (!filled(i)) continue;
+    const key = norm(i.name) + '|' + norm(i.unit);
+    let r = map.get(key);
+    if (!r) map.set(key, r = { key, name: i.name.trim(), unit: (i.unit || '').trim(), raw: 0, uses: [], order: order++ });
+    r.raw += num(i.qty);
+    r.uses.push({ where: [d.name, m.name, ds.name].filter(x => norm(x)).join(' · '), qty: num(i.qty) });
+  }
+  return [...map.values()].map(r => (r.qty = adj(r.raw, f), r));
+}
+function sorted(rows) {
+  rows = rows.slice();
+  if (LV.sort === 'az') rows.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+  if (LV.sort === 'qty') rows.sort((a, b) => b.qty - a.qty);
+  return rows;
+}
+const price = r => PRICES[r.key] ?? '';
+const total = rows => rows.reduce((s, r) => s + r.qty * num(price(r)), 0);
+const isBought = (t, k) => t.bought.includes(k);
+
+function renderList() {
+  const t = trip();
+  if (!t) { $('#list').innerHTML = emptyHTML(); $('#pcount').textContent = 0; return; }
+  const all = aggregate(t), f = factor(t);
+  $('#pcount').textContent = all.length;
+  let rows = sorted(all);
+  if (LV.q) rows = rows.filter(r => low(r.name).includes(low(LV.q)));
+  if (LV.hideBought) rows = rows.filter(r => !isBought(t, r.key));
+  const nb = all.filter(r => isBought(t, r.key)).length;
+  $('#list').innerHTML = `
+    <div class="panel">
+      <label>Меню расписано на <input class="n" data-k="basePeople:" id="basePeople" value="${esc(t.basePeople)}" inputmode="numeric" placeholder="—"> чел.</label>
+      <label>Едет <input class="n" data-k="people:" id="people" value="${esc(t.people)}" inputmode="numeric" placeholder="—"> чел.</label>
+      <span>${f === 1 ? '<span class="hint" style="margin:0">заполните оба поля, чтобы пересчитать на другое число людей</span>' : `количества × <span class="factor">${fmt(f)}</span>`}</span>
+    </div>
+    <div class="panel">
+      <button class="btn primary" data-act="pdfList">PDF: список закупки</button>
+      <button class="btn" data-act="pdfMenu">PDF: меню по дням</button>
+      <button class="btn" data-act="csv">Excel</button>
+      <label><input type="checkbox" id="docPrices" ${UI.docPrices ? 'checked' : ''}> цены в PDF</label>
+    </div>
+    <div class="stats">
+      <span><b>${all.length}</b> продуктов</span>
+      <span>куплено <b>${nb}</b> из ${all.length}</span>
+      <span>примерно <b id="total">${fmt(total(all))} ₽</b></span>
+    </div>
+    <div class="filters">
+      <input type="search" id="q" data-k="q:" placeholder="Поиск продукта…" value="${esc(LV.q)}">
+      <select id="sort" aria-label="Сортировка"><option value="az">по алфавиту</option><option value="order">как в меню</option><option value="qty">по количеству</option></select>
+      <label><input type="checkbox" id="hideBought" ${LV.hideBought ? 'checked' : ''}> скрыть купленное</label>
+    </div>
+    ${all.length === 0 ? '<div class="empty"><p>Пока пусто — добавьте продукты во вкладке «Меню».</p></div>' : `
+    <div class="tbl"><table>
+      <thead><tr><th style="width:28px">✓</th><th>Продукт</th><th class="num">Кол-во</th><th class="num">Цена/ед.</th><th class="num">Сумма</th></tr></thead>
+      <tbody>${rows.map(r => `<tr data-key="${esc(r.key)}" class="${isBought(t, r.key) ? 'done' : ''}">
+          <td><input type="checkbox" data-buy aria-label="Куплено" ${isBought(t, r.key) ? 'checked' : ''}></td>
+          <td><details><summary><span class="pname">${esc(r.name)}</span> <span class="uses">×${r.uses.length} ▸</span></summary>
+            <ul>${r.uses.map(u => `<li>${esc(u.where || '—')}: ${fmt(u.qty)}</li>`).join('')}</ul></details></td>
+          <td class="num"><b>${fmt(r.qty)}</b> ${esc(r.unit)}${f !== 1 ? `<div class="was">было ${fmt(r.raw)}</div>` : ''}</td>
+          <td class="num price"><input data-price data-k="price:${esc(r.key)}" value="${esc(price(r))}" inputmode="decimal" placeholder="—" aria-label="Цена"></td>
+          <td class="num" data-sum>${price(r) !== '' ? fmt(r.qty * num(price(r))) : ''}</td>
+        </tr>`).join('')}</tbody>
+      <tfoot><tr><td></td><td>Итого</td><td></td><td></td><td class="num" id="total2">${fmt(total(all))} ₽</td></tr></tfoot>
+    </table></div>
+    <p class="hint">Цена — за одну единицу (шт, кг…) и запоминается для всех походов. Нажмите на продукт, чтобы увидеть, где он используется.</p>`}`;
+  $('#sort').value = LV.sort;
+}
+function updateTotals() { const s = fmt(total(aggregate(trip()))) + ' ₽'; $('#total').textContent = $('#total2').textContent = s; }
+
+// ---------- PDF и файлы ----------
+const PDFCSS = `
+.pdf{width:740px;padding:6px 10px;background:#fff;color:#1b2a2f;font:13px/1.4 Rubik,Arial,sans-serif}
+.pd-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #d65f1d;padding-bottom:8px;margin-bottom:12px}
+.pd-brand{font-family:Neucha,cursive;color:#1f5a75;font-size:17px}
+.pd-title{font-size:23px;font-weight:700;line-height:1.15}
+.pd-sub{color:#5f6b67;font-size:12px}
+.pdf table{width:100%;border-collapse:collapse}
+.pdf th{background:#1f5a75;color:#fff;text-align:left;padding:5px 7px;font-weight:500;font-size:12px}
+.pdf td{padding:5px 7px;border-bottom:1px solid #ddd5c4}
+.pdf tbody tr:nth-child(even) td{background:#f6f3eb}
+.pdf .n{text-align:right;white-space:nowrap}
+.pdf .c{text-align:center;width:22px}
+.pdf .box{display:inline-block;width:13px;height:13px;border:1.5px solid #1b2a2f;border-radius:3px}
+.pdf tfoot td{font-weight:700;border-top:2px solid #1b2a2f;border-bottom:none}
+.pd-day{margin:14px 0 4px;font-family:Neucha,cursive;font-size:22px;color:#2c5a3a;border-bottom:1px solid #ddd5c4}
+.pd-meal{display:flex;gap:10px;padding:4px 0;border-bottom:1px dashed #e4ddcf}
+.pd-meal>b{width:120px;flex:none;color:#d65f1d;font-weight:600}
+.pd-dish{margin-bottom:2px}
+.pd-dish i{font-style:normal;font-weight:600}
+.pd-foot{margin-top:14px;color:#8a938f;font-size:11px;text-align:right;font-family:Neucha,cursive}`;
+function pdfShell(title, sub, body) {
+  return `<div class="pdf"><style>${PDFCSS}</style>
+    <div class="pd-head"><div><div class="pd-title">${esc(title)}</div><div class="pd-sub">${sub}</div></div><div class="pd-brand">Котелок</div></div>
+    ${body}<div class="pd-foot">Котелок · by Sega Mega</div></div>`;
+}
+function peopleNote(t) {
+  if (factor(t) !== 1) return ` · пересчитано на ${esc(t.people)} чел. (меню на ${esc(t.basePeople)})`;
+  return num(t.basePeople) > 0 ? ` · на ${esc(t.basePeople)} чел.` : '';
+}
+function listPdfHTML(t) {
+  const rows = sorted(aggregate(t)), p = UI.docPrices;
+  let b = `<table><thead><tr><th class="c">✓</th><th class="c">№</th><th>Продукт</th><th class="n">Кол-во</th><th>Ед.</th>${p ? '<th class="n">Цена</th><th class="n">Сумма</th>' : ''}</tr></thead><tbody>`;
+  rows.forEach((r, i) => {
+    const pr = price(r);
+    b += `<tr><td class="c"><span class="box"></span></td><td class="c">${i + 1}</td><td>${esc(r.name)}</td><td class="n"><b>${fmt(r.qty)}</b></td><td>${esc(r.unit)}</td>${p ? `<td class="n">${pr !== '' ? fmt(num(pr)) : ''}</td><td class="n">${pr !== '' ? fmt(r.qty * num(pr)) : ''}</td>` : ''}</tr>`;
+  });
+  b += `</tbody>${p ? `<tfoot><tr><td></td><td></td><td>Итого</td><td></td><td></td><td></td><td class="n">${fmt(total(rows))} ₽</td></tr></tfoot>` : ''}</table>`;
+  return pdfShell(t.name, `Список закупки · ${rows.length} продуктов${peopleNote(t)} · ${new Date().toLocaleDateString('ru-RU')}`, b);
+}
+function menuPdfHTML(t) {
+  let b = '';
+  for (const d of t.days) {
+    if (!dayCount(d)) continue;
+    b += `<div class="pd-day">${esc(d.name || 'День')}</div>`;
+    for (const m of d.meals) {
+      const dishes = m.dishes.map(ds => {
+        const its = ds.items.filter(filled).map(i => `${esc(i.name.trim())} ${fmt(num(i.qty))}${i.unit ? ' ' + esc(i.unit) : ''}`).join(', ');
+        return its ? `<div class="pd-dish">${norm(ds.name) ? `<i>${esc(ds.name)}:</i> ` : ''}${its}</div>` : '';
+      }).join('');
+      if (dishes) b += `<div class="pd-meal"><b>${esc(m.name || '—')}</b><div>${dishes}</div></div>`;
+    }
+  }
+  const nd = t.days.filter(dayCount).length;
+  const w = nd % 10 === 1 && nd % 100 !== 11 ? 'день' : nd % 10 >= 2 && nd % 10 <= 4 && (nd % 100 < 10 || nd % 100 >= 20) ? 'дня' : 'дней';
+  return pdfShell(t.name, `Меню · ${nd} ${w}${num(t.basePeople) > 0 ? ` · на ${esc(t.basePeople)} чел.` : ''}`, b || '<p>Меню пока пустое.</p>');
+}
+let pdfLib = null;
+function loadPdfLib() {
+  if (window.html2pdf) return Promise.resolve();
+  return pdfLib ||= new Promise((ok, fail) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+    s.onload = ok; s.onerror = () => { pdfLib = null; s.remove(); fail(); };
+    document.head.appendChild(s);
+  });
+}
+async function makePdf(html, filename) {
+  toast('Готовлю PDF…', true);
+  try { await loadPdfLib(); } catch (e) { toast('Модуль PDF не загрузился. Нужен интернет при первом создании PDF — попробуйте ещё раз.'); return; }
+  const host = $('#pdfroot'); host.innerHTML = html;
+  try {
+    const blob = await html2pdf().set({
+      margin: [10, 10, 12, 10], image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.pd-meal', '.pd-day'] }
+    }).from(host.firstElementChild).outputPdf('blob');
+    $('#toast').hidden = true;
+    await saveFile(filename, blob, 'application/pdf');
+  } catch (e) { toast('Не получилось сделать PDF: ' + (e && e.message || e)); }
+  finally { host.innerHTML = ''; }
+}
+async function saveFile(name, data, type) {
+  const blob = data instanceof Blob ? data : new Blob([data], { type });
+  let file = null;
+  try { file = new File([blob], name, { type }); } catch (e) {}
+  if (isPhone && file && navigator.canShare && navigator.canShare({ files: [file] })) {
+    // На телефоне — через «Поделиться»: сохранить в Файлы, отправить в Telegram, распечатать
+    await ask({ title: 'Файл готов', text: name, options: [{ label: 'Сохранить или отправить…', primary: true, run: () => navigator.share({ files: [file] }).catch(() => {}) }] });
+    return;
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast('Сохранено: ' + name);
+}
+const csvNum = n => String(Math.round(n * 100) / 100).replace('.', ',');
+const toCsv = rows => '﻿' + rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(';')).join('\r\n');
+function doExport(kind, t) {
+  if (kind === 'pdfList') makePdf(listPdfHTML(t), `${safeName(t.name)} — список закупки.pdf`);
+  else if (kind === 'pdfMenu') makePdf(menuPdfHTML(t), `${safeName(t.name)} — меню.pdf`);
+  else if (kind === 'tripFile') saveFile(`${safeName(t.name)}.kotelok.json`, JSON.stringify({ app: 'kotelok', trips: [t], prices: PRICES }, null, 1), 'application/json');
+  else {
+    const rows = [['Продукт', 'Количество', 'Ед.', 'Цена', 'Сумма', 'Куплено']];
+    for (const r of sorted(aggregate(t))) { const p = price(r); rows.push([r.name, csvNum(r.qty), r.unit, p !== '' ? csvNum(num(p)) : '', p !== '' ? csvNum(r.qty * num(p)) : '', isBought(t, r.key) ? 'да' : '']); }
+    saveFile(`${safeName(t.name)} — продукты.csv`, toCsv(rows), 'text/csv');
+  }
+}
+
+// ---------- пример ----------
+const SAMPLE = `# 9 мая
+## завтрак
+яйцо 35|молоко 1|сосиски 4|батон 2|икра мойвы 4
+## обед
+батон 8|икра кобачок 4|огурец 4|сыр ванна 4|грудка копч 4|соленья кат 4|колбаса вареная 4
+## ужин
+### Лагман
+лапша лагман 4|перец бол 3|редька 2|морковь 2|лук 2|перец острый 2|кинза 1|сельдерей 1|говядина 2.3|томатная паста 1
+# 10 мая
+## завтрак
+### Рис с тушёнкой
+рис круглый 1|тушенка 3|лук 1
+###
+колбаса яичная 2|сыр твёрдый 1|батон 3
+## обед
+колбаса коп.кат 4|шпроты 4|соленья кат 4|сыр творож 8|батон 8|грудка-сало 4|арахис 8
+## ужин
+### Суп с курицей
+грибы шамп 3|бедро курин 17|картошка 2|морковь 2|лук 2|сыр ванна суп 3|укроп 1
+###
+хлеб 3
+# 11 мая
+## завтрак
+### Овсянка
+каша овсян 1|сгущ 1
+###
+колбаса яичная 3|батон 3
+## обед
+### Солянка
+колбаса солянка 2|грудка копч 1|сосиски 2|томатная паста 1|тушенка 2|огурцы мар 2|оливки+маслины 2|каперсы 1|лимон 1|морковь 2|лук 1
+###
+хлеб 2
+## ужин
+### Плов
+рис длинный 2|индейка 2.5|морковь 3|лук 3|зира 1|барбарис 1
+###
+помидоры 12|хлеб 2|лук красный 2
+# 12 мая
+## завтрак
+### Греча с тушёнкой
+греча 2|тушенка 3|лук 2
+###
+грибы маринов 2|колбаса 3|сыр твёрдый 1|батон 2
+## выход
+сосиски 3|тушенка 2|суп пакет 4|лапша бп 3|хлеб 2
+# Общее
+## допы
+чай 5|кофе 1|сахар 2|соль 2|сгущ 3|грудка копч 3|сыр ванна 4|лаврушка 1|укроп 1|майонез 3|кетчуп 1|горчица 1|печенье 2|пряники 2|зефир 3|шпроты 2|масло подсолнечное 2|масло топленое 1
+## нз
+суп пакет 3|тушенка 3|картошка 1.5|ассорти овощ 3|маслины 2`;
+function sampleTrip() {
+  const t = newTrip('Юрюзань (пример)'); t.days = [];
+  let day, meal, dish;
+  for (const raw of SAMPLE.split('\n')) {
+    const l = raw.trim(); if (!l) continue;
+    if (l.startsWith('###')) { dish = { id: uid(), name: l.slice(3).trim(), items: [] }; meal.dishes.push(dish); }
+    else if (l.startsWith('## ')) { meal = { id: uid(), name: l.slice(3), dishes: [] }; day.meals.push(meal); dish = { id: uid(), name: '', items: [] }; meal.dishes.push(dish); }
+    else if (l.startsWith('# ')) { day = { id: uid(), name: l.slice(2), meals: [] }; t.days.push(day); }
+    else for (const p of l.split('|')) { const m = p.match(/^(.*\S)\s+([\d.]+)$/); dish.items.push({ id: uid(), name: m[1], qty: m[2].replace('.', ','), unit: '' }); }
+  }
+  t.days.forEach(d => d.meals.forEach(m => m.dishes = m.dishes.filter(ds => ds.items.length || ds.name)));
+  return t;
+}
+
+// ---------- общий рендер ----------
+function renderTrips() {
+  const s = $('#trip');
+  s.innerHTML = TRIPS.length ? TRIPS.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('') : '<option>нет походов</option>';
+  s.disabled = !TRIPS.length;
+  if (TRIPS.length) { UI.current = trip().id; s.value = UI.current; }
+}
+function renderTab() {
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === UI.tab));
+  $('#menu').hidden = UI.tab !== 'menu';
+  $('#list').hidden = UI.tab !== 'list';
+}
+function render() { renderTrips(); renderMenu(); renderList(); renderTab(); setStatus(); }
+function keepFocus(fn) {
+  const a = document.activeElement, k = a && a.dataset && a.dataset.k;
+  const s = k ? [a.selectionStart, a.selectionEnd] : null;
+  fn();
+  if (k) { const el = document.querySelector(`[data-k="${CSS.escape(k)}"]`); if (el) { el.focus(); try { el.setSelectionRange(s[0], s[1]); } catch (e) {} } }
+}
+const renderKeepFocus = () => keepFocus(render);
+const focusItem = id => $(`[data-k="name:${id}"]`)?.focus();
+
+// ---------- события ----------
+document.addEventListener('click', async e => {
+  const tabBtn = e.target.closest('[data-tab]');
+  if (tabBtn) { UI.tab = tabBtn.dataset.tab; saveLocal(); if (UI.tab === 'list') renderList(); renderTab(); return; }
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const { t, day, meal, dish, item } = ctx(b);
+  const act = b.dataset.act;
+  let focus = null;
+  switch (act) {
+    case 'syncMenu': syncMenu(); return;
+    case 'hideInstall': UI.hideInstall = true; saveLocal(); $('#install').hidden = true; return;
+    case 'newTrip': {
+      const name = await ask({ title: 'Новый поход', input: 'Например: Юрюзань, май 2027', ok: 'Создать' }); if (!name) return;
+      const nt = newTrip(name); TRIPS.push(nt); UI.current = nt.id; UI.tab = 'menu'; touch(nt); break;
+    }
+    case 'sample': { const st = sampleTrip(); TRIPS.push(st); UI.current = st.id; UI.tab = 'menu'; touch(st); toast('Добавлен пример «Юрюзань»'); break; }
+    case 'renameTrip': {
+      if (!t) return;
+      const name = await ask({ title: 'Название похода', input: '', value: t.name, ok: 'Сохранить' }); if (!name) return;
+      t.name = name; touch(t); break;
+    }
+    case 'delTrip': {
+      if (!t) return;
+      if (!await ask({ title: 'Удалить поход?', text: `«${t.name}» удалится вместе с меню${yaToken ? ' — и на других устройствах тоже' : ''}.`, ok: 'Удалить', danger: true })) return;
+      TRIPS = TRIPS.filter(x => x !== t); DELETED[t.id] = Date.now(); UI.current = TRIPS[0]?.id || null; saveLocal(); syncSoon(); break;
+    }
+    case 'exportMenu': {
+      if (!t) { toast('Сначала создайте поход'); return; }
+      const v = await ask({ title: 'Сохранить', text: t.name, options: [
+        { label: 'PDF — список закупки', value: 'pdfList' }, { label: 'PDF — меню по дням', value: 'pdfMenu' },
+        { label: 'Excel — список продуктов', value: 'csv' }, { label: 'Файл похода — отправить другу', value: 'tripFile' }] });
+      if (v) doExport(v, t);
+      return;
+    }
+    case 'pdfList': case 'pdfMenu': case 'csv': doExport(act, t); return;
+    case 'addDay': { const d = newDay('День ' + (t.days.length + 1)); t.days.push(d); touch(t); focus = () => { const el = $(`[data-k="day:${d.id}"]`); el.focus(); el.select(); }; break; }
+    case 'toggleDay': UI.collapsed[day.id] = !UI.collapsed[day.id]; saveLocal(); break;
+    case 'upDay': case 'downDay': {
+      const i = t.days.indexOf(day), j = act === 'upDay' ? i - 1 : i + 1;
+      if (j < 0 || j >= t.days.length) return;
+      [t.days[i], t.days[j]] = [t.days[j], t.days[i]]; touch(t); break;
+    }
+    case 'copyDay': {
+      const c = JSON.parse(JSON.stringify(day));
+      c.id = uid(); c.name = day.name + ' (копия)';
+      c.meals.forEach(m => { m.id = uid(); m.dishes.forEach(ds => { ds.id = uid(); ds.items.forEach(i => i.id = uid()); }); });
+      t.days.splice(t.days.indexOf(day) + 1, 0, c); touch(t); break;
+    }
+    case 'delDay':
+      if (dayCount(day) && !await ask({ title: 'Удалить день?', text: `«${day.name || 'день'}» удалится со всеми продуктами.`, ok: 'Удалить', danger: true })) return;
+      t.days = t.days.filter(d => d !== day); touch(t); break;
+    case 'addMeal': { const m = newMeal(''); day.meals.push(m); touch(t); focus = () => $(`[data-k="meal:${m.id}"]`).focus(); break; }
+    case 'delMeal':
+      if (meal.dishes.some(ds => ds.items.some(filled)) && !await ask({ title: 'Удалить приём пищи?', text: `«${meal.name || 'приём пищи'}» удалится со всеми продуктами.`, ok: 'Удалить', danger: true })) return;
+      day.meals = day.meals.filter(m => m !== meal); touch(t); break;
+    case 'addDish': { const ds = newDish(); meal.dishes.push(ds); touch(t); focus = () => $(`[data-k="dish:${ds.id}"]`).focus(); break; }
+    case 'delDish':
+      if (dish.items.some(filled) && !await ask({ title: 'Удалить блюдо?', text: `${dish.name ? '«' + dish.name + '» у' : 'У'}далится со всеми продуктами.`, ok: 'Удалить', danger: true })) return;
+      meal.dishes = meal.dishes.filter(d => d !== dish); touch(t); break;
+    case 'addItem': { const i = newItem(); dish.items.push(i); touch(t); focus = () => focusItem(i.id); break; }
+    case 'delItem': dish.items = dish.items.filter(i => i !== item); touch(t); break;
+    case 'backup': saveFile(`kotelok-копия-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify({ app: 'kotelok', trips: TRIPS, prices: PRICES }, null, 1), 'application/json'); return;
+    case 'restore': $('#file').click(); return;
+  }
+  saveLocal(); render(); if (focus) focus();
+});
+
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.id === 'minput') return;
+  if (el.id === 'q') { LV.q = el.value; keepFocus(renderList); return; }
+  const t = trip(); if (!t) return;
+  if (el.id === 'basePeople' || el.id === 'people') { t[el.id] = el.value.trim(); touch(t); keepFocus(renderList); return; }
+  if (el.dataset.price !== undefined) {
+    const key = el.closest('tr').dataset.key;
+    if (el.value.trim() === '') delete PRICES[key]; else PRICES[key] = el.value.trim();
+    const r = aggregate(t).find(x => x.key === key);
+    el.closest('tr').querySelector('[data-sum]').textContent = el.value.trim() ? fmt(r.qty * num(el.value)) : '';
+    updateTotals(); touchPrices(); return;
+  }
+  const f = el.dataset.f; if (!f) return;
+  autocomplete(el, e);
+  const { day, meal, dish, item } = ctx(el);
+  if (f === 'day') day.name = el.value;
+  else if (f === 'meal') meal.name = el.value;
+  else if (f === 'dish') dish.name = el.value;
+  else item[f] = el.value;
+  touch(t);
+});
+
+document.addEventListener('change', e => {
+  const el = e.target;
+  if (el.id === 'trip') { UI.current = el.value; saveLocal(); render(); return; }
+  if (el.id === 'sort') { LV.sort = el.value; renderList(); return; }
+  if (el.id === 'hideBought') { LV.hideBought = el.checked; renderList(); return; }
+  if (el.id === 'docPrices') { UI.docPrices = el.checked; saveLocal(); return; }
+  if (el.dataset.buy !== undefined) {
+    const t = trip(), key = el.closest('tr').dataset.key;
+    t.bought = t.bought.filter(k => k !== key); if (el.checked) t.bought.push(key);
+    touch(t); renderList(); return;
+  }
+  if (el.id === 'file') {
+    const file = el.files[0]; el.value = ''; if (!file) return;
+    file.text().then(async txt => {
+      let s; try { s = JSON.parse(txt); } catch (err) { s = null; }
+      if (!s || !Array.isArray(s.trips)) { toast('Это не файл Котелка — не подошёл.'); return; }
+      const oldBought = s.bought && !Array.isArray(s.bought) ? s.bought : {};
+      const incoming = s.trips.map(t => { if (oldBought[t.id]) t.bought = oldBought[t.id]; return normTrip(t); });
+      const names = incoming.map(t => '«' + t.name + '»').join(', ');
+      if (!await ask({ title: 'Открыть файл?', text: `Походов в файле: ${incoming.length} — ${names}.\nЕсли такой поход уже есть, он заменится версией из файла.`, ok: 'Открыть' })) return;
+      for (const t of incoming) { TRIPS = TRIPS.filter(x => x.id !== t.id); delete DELETED[t.id]; t.updated = Date.now(); TRIPS.push(t); }
+      for (const [k, v] of Object.entries(s.prices || {})) if (!(k in PRICES)) PRICES[k] = v;
+      sortTrips(); UI.current = incoming[0]?.id || UI.current; touchPrices(); render(); toast('Готово');
+    });
+    return;
+  }
+  if (el.dataset.f) {
+    const day = el.closest('[data-day]');
+    if (day) { const d = trip().days.find(x => x.id === day.dataset.day); if (d) day.querySelector('[data-count]').textContent = dayCount(d) + ' прод.'; }
+    $('#pcount').textContent = aggregate(trip()).length;
+  }
+});
+
+document.addEventListener('keydown', e => {
+  const el = e.target, f = el.dataset && el.dataset.f;
+  if (!f) return;
+  if (e.key === 'ArrowRight' && el.selectionEnd > el.selectionStart && el.selectionEnd === el.value.length) { el.setSelectionRange(el.value.length, el.value.length); e.preventDefault(); return; }
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  el.setSelectionRange?.(el.value.length, el.value.length);
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+  if (f === 'name') { el.parentElement.querySelector('[data-f="qty"]').focus(); return; }
+  if (f === 'qty' || f === 'unit') {
+    const next = el.closest('.item').nextElementSibling;
+    if (next && next.classList.contains('item')) { next.querySelector('[data-f="name"]').focus(); return; }
+    const { t, dish } = ctx(el);
+    const i = newItem(); dish.items.push(i); touch(t);
+    renderMenu(); focusItem(i.id); return;
+  }
+  if (f === 'dish') { focusItem(ctx(el).dish.items[0]?.id); return; }
+  if (f === 'meal') { const ds = el.closest('.meal').querySelector('.dish-name'); if (ds) { ds.focus(); return; } }
+  el.blur();
+});
+
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncSoon(300); });
+addEventListener('online', () => syncSoon(300));
+
+// сосны на заставке
+(function pines() {
+  const g = document.getElementById('pines'); let s = '';
+  for (let i = 0; i < 26; i++) {
+    const x = 560 + i * 18 + ((i * 37) % 11), h = 26 + ((i * 53) % 22), y = 116;
+    s += `<polygon points="${x},${y - h} ${x - h * 0.28},${y - h * 0.45} ${x + h * 0.28},${y - h * 0.45}"/><polygon points="${x},${y - h * 0.7} ${x - h * 0.36},${y} ${x + h * 0.36},${y}"/>`;
+  }
+  g.innerHTML = s;
+})();
+
+loadLocal();
+readOAuthReturn();
+$('#install').hidden = !(isIOS && !standalone && !UI.hideInstall);
+render();
+if (yaToken) sync();
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
