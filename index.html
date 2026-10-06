@@ -339,7 +339,7 @@ async function yaDownload() {
   if (r.status === 404) return null;
   if (!r.ok) throw 'net';
   const { href } = await r.json();
-  const f = await fetch(href);
+  const f = await fetch(href, { referrerPolicy: 'no-referrer', cache: 'no-store' });
   if (!f.ok) throw 'net';
   return JSON.parse(await f.text());
 }
@@ -347,7 +347,7 @@ async function yaUpload(data) {
   const r = await yaApi('/resources/upload?overwrite=true&path=' + encodeURIComponent(YA_FILE));
   if (!r.ok) throw 'net';
   const { href } = await r.json();
-  const u = await fetch(href, { method: 'PUT', body: new Blob([JSON.stringify(data)], { type: 'application/json' }) });
+  const u = await fetch(href, { method: 'PUT', referrerPolicy: 'no-referrer', body: new Blob([JSON.stringify(data)], { type: 'application/json' }) });
   if (!u.ok) throw 'net';
 }
 const sig = d => stable({ trips: [...(d.trips || [])].map(normTrip).sort((a, b) => a.id < b.id ? -1 : 1), prices: d.prices || {}, pricesAt: d.pricesAt || 0, deleted: d.deleted || {} });
