@@ -23,6 +23,14 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- Яндекс Метрика: анонимная статистика посещений, без Вебвизора. Содержимое меню никуда не отправляется. -->
+<script>
+(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();
+for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}
+k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=113565101','ym');
+ym(113565101,'init',{ssr:true,clickmap:true,referrer:document.referrer,url:location.href,accurateTrackBounce:true,trackLinks:true});
+</script>
 <link rel="preload" href="fonts/neucha-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="fonts/fonts.css">
 <style>
@@ -288,6 +296,8 @@ const MEALS = ['завтрак','обед','ужин','перекус','на к�
 const UNITS = ['шт','кг','г','л','уп','банка','пачка','бутылка'];
 const LS = 'kotelok-v1', LS_TOKEN = 'kotelok-ya', YA_FILE = 'app:/kotelok.json';
 
+// Отметка действия в Яндекс Метрике (только факт нажатия, без содержимого)
+const goal = name => { try { if (window.ym && !new URLSearchParams(location.search).get('demo')) ym(113565101, 'reachGoal', name); } catch (e) {} };
 const uid = () => Math.random().toString(36).slice(2, 10);
 const low = s => String(s || '').toLowerCase().replace(/ё/g, 'е');
 const norm = s => low(s).replace(/\s+/g, ' ').trim();
@@ -435,7 +445,7 @@ function readOAuthReturn() {
     yaToken = h.get('access_token');
     try { localStorage.setItem(LS_TOKEN, yaToken); } catch (e) {}
     history.replaceState(null, '', location.pathname + location.search);
-    toast('Яндекс Диск подключён');
+    toast('Яндекс Диск подключён'); goal('sync_connected');
   } else if (h.get('error')) {
     history.replaceState(null, '', location.pathname + location.search);
     toast('Вход в Яндекс не выполнен');
@@ -771,6 +781,7 @@ async function saveFile(name, data, type) {
 const csvNum = n => String(Math.round(n * 100) / 100).replace('.', ',');
 const toCsv = rows => '﻿' + rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(';')).join('\r\n');
 async function doExport(kind, t) { if (kind.startsWith('pdf')) await loadQr().catch(() => {});
+  goal({ pdfList: 'pdf_list', pdfMenu: 'pdf_menu', tripFile: 'trip_file' }[kind] || 'excel');
   if (kind === 'pdfList') makePdf(listPdfHTML(t), `${safeName(t.name)} — список закупки.pdf`);
   else if (kind === 'pdfMenu') makePdf(menuPdfHTML(t), `${safeName(t.name)} — меню.pdf`);
   else if (kind === 'tripFile') saveFile(`${safeName(t.name)}.kotelok.json`, JSON.stringify({ app: 'kotelok', trips: [t], prices: PRICES }, null, 1), 'application/json');
@@ -1002,7 +1013,7 @@ async function addFromRecipe(t, meal) {
   const first = meal.dishes[0];
   if (meal.dishes.length === 1 && !norm(first.name) && !first.items.some(filled)) meal.dishes = [];
   meal.dishes.push(ds); touch(t); saveLocal(); render();
-  toast(`«${r.name}» на ${people} чел. добавлен`);
+  toast(`«${r.name}» на ${people} чел. добавлен`); goal('recipe_added');
 }
 async function saveAsRecipe(t, dish) {
   if (!dish.items.some(filled)) { toast('В блюде пока нет продуктов'); return; }
@@ -1021,7 +1032,7 @@ async function saveAsRecipe(t, dish) {
     }
   }
   const r = { id: uid(), name: same ? name + ' (новый)' : name, serves: String(num(n)), note: 'из похода «' + t.name + '»', items };
-  RECIPES.push(r); touchLib(); toast(`Рецепт «${r.name}» сохранён ✓`);
+  RECIPES.push(r); touchLib(); toast(`Рецепт «${r.name}» сохранён ✓`); goal('recipe_saved');
 }
 
 // ---------- общий рендер ----------
@@ -1067,7 +1078,7 @@ document.addEventListener('click', async e => {
       UI.ropen[r.id] = false; touchLib(); renderRecipes(); $(`[data-recipe="${r.id}"]`)?.scrollIntoView({ block: 'nearest' });
       toast(`Рецепт «${r.name}» сохранён ✓`); return;
     }
-    case 'favRecipe': lib.r.fav = !lib.r.fav; touchLib(); keepFocus(renderRecipes); toast(lib.r.fav ? `«${lib.r.name}» — в избранном ❤️` : `«${lib.r.name}» убран из избранного`); return;
+    case 'favRecipe': lib.r.fav = !lib.r.fav; if (lib.r.fav) goal('recipe_fav'); touchLib(); keepFocus(renderRecipes); toast(lib.r.fav ? `«${lib.r.name}» — в избранном ❤️` : `«${lib.r.name}» убран из избранного`); return;
     case 'rfilterAll': UI.rfilter = 'all'; saveLocal(); renderRecipes(); return;
     case 'rfilterFav': UI.rfilter = 'fav'; saveLocal(); renderRecipes(); return;
     case 'copyRecipe': { const c = JSON.parse(JSON.stringify(lib.r)); c.id = uid(); c.name += ' (копия)'; c.items.forEach(i => i.id = uid()); RECIPES.push(c); UI.ropen[c.id] = true; touchLib(); renderRecipes(); return; }
@@ -1078,13 +1089,13 @@ document.addEventListener('click', async e => {
     case 'delRItem': lib.r.items = lib.r.items.filter(i => i !== lib.item); touchLib(); keepFocus(renderRecipes); return;
     case 'addPack': { const p = { id: uid(), name: '', pack: 'пачка', grams: '' }; PACKS.push(p); touchLib(); renderRecipes(); $(`[data-k="pname:${p.id}"]`)?.focus(); return; }
     case 'delPack': PACKS = PACKS.filter(p => p !== lib.pack); touchLib(); renderRecipes(); return;
-    case 'syncMenu': syncMenu(); return; case 'donate': await loadQr().catch(() => {}); ask({ title: 'Поддержать автора', html: '<span style="display:block;margin-bottom:10px">Котелок бесплатный и без рекламы. Если пригодился в походе — подкинь автору на тушёнку 🥫</span><span style="display:flex;justify-content:center">' + qrImg(DONATE_URL, 170) + '</span><span style="display:block;text-align:center;font-size:12px;margin-top:6px">Наведи камеру телефона на QR-код или нажми кнопку ниже</span>', options: [{ label: '☕ Поддержать через ЮMoney', primary: true, run: () => window.open(DONATE_URL, '_blank') }] }); return;
+    case 'syncMenu': syncMenu(); return; case 'donate': goal('donate_open'); await loadQr().catch(() => {}); ask({ title: 'Поддержать автора', html: '<span style="display:block;margin-bottom:10px">Котелок бесплатный и без рекламы. Если пригодился в походе — подкинь автору на тушёнку 🥫</span><span style="display:flex;justify-content:center">' + qrImg(DONATE_URL, 170) + '</span><span style="display:block;text-align:center;font-size:12px;margin-top:6px">Наведи камеру телефона на QR-код или нажми кнопку ниже</span>', options: [{ label: '☕ Поддержать через ЮMoney', primary: true, run: () => window.open(DONATE_URL, '_blank') }] }); return;
     case 'hideInstall': UI.hideInstall = true; saveLocal(); $('#install').hidden = true; return;
     case 'newTrip': {
       const name = await ask({ title: 'Новый поход', input: 'Например: Юрюзань, май 2027', ok: 'Создать' }); if (!name) return;
-      const nt = newTrip(name); TRIPS.push(nt); UI.current = nt.id; UI.tab = 'menu'; touch(nt); break;
+      const nt = newTrip(name); TRIPS.push(nt); UI.current = nt.id; UI.tab = 'menu'; touch(nt); goal('trip_created'); break;
     }
-    case 'sample': { const st = sampleTrip(); TRIPS.push(st); UI.current = st.id; UI.tab = 'menu'; touch(st); toast('Добавлен пример сплава на 12 человек'); break; }
+    case 'sample': { const st = sampleTrip(); TRIPS.push(st); UI.current = st.id; UI.tab = 'menu'; touch(st); toast('Добавлен пример сплава на 12 человек'); goal('sample_opened'); break; }
     case 'renameTrip': {
       if (!t) return;
       const name = await ask({ title: 'Название похода', input: '', value: t.name, ok: 'Сохранить' }); if (!name) return;
