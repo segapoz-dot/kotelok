@@ -1,8 +1,9 @@
 // Котелок — работа без интернета.
 // Страница: сначала сеть (чтобы приходили обновления), без сети — из кэша.
 // Шрифты и модуль PDF: из кэша, обновляются в фоне. Яндекс Диск — только сеть.
-const CACHE = 'kotelok-v2';
-const CORE = ['./', './index.html', './help.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+const CACHE = 'kotelok-v3';
+const CORE = ['./', './index.html', './help.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png',
+  './fonts/fonts.css', './fonts/neucha-cyrillic.woff2', './fonts/neucha-latin.woff2', './fonts/rubik-cyrillic.woff2', './fonts/rubik-latin.woff2'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)));

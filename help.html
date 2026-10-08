@@ -10,8 +10,8 @@
 <meta property="og:description" content="Короткая памятка со стрелочками: поставить на телефон, заполнить меню, получить список закупки.">
 <meta property="og:image" content="https://segapoz-dot.github.io/kotelok/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Neucha&family=Rubik:wght@400;500;700&display=swap">
+<link rel="preload" href="fonts/neucha-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="fonts/fonts.css">
 <style>
 /* Памятка в стиле Котелка: шаги-карточки, «нарисованные» кнопки и большие оранжевые стрелки */
 :root{
@@ -25,7 +25,7 @@ body{margin:0;background:var(--rock);color:var(--ink);font:17px/1.45 var(--body)
 header{background:linear-gradient(180deg,#4f92c9,#2a6b88);color:#fff;text-align:center;padding:22px 16px 26px;border-radius:0 0 22px 22px}
 header h1{font:400 44px/1 var(--display);margin:0}
 header p{margin:6px 0 0;font-size:16px;opacity:.95}
-.pot{font-size:42px}
+.pot{display:block;margin:0 auto 6px;width:64px;height:64px;border-radius:15px;box-shadow:0 3px 10px rgba(0,0,0,.25)}
 .step{background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:16px 16px 18px;margin:18px 0;position:relative}
 .num{position:absolute;top:-16px;left:14px;background:var(--raft);color:#fff;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 22px var(--body);box-shadow:0 2px 0 rgba(0,0,0,.15)}
 .step h2{font:400 28px/1.1 var(--display);color:var(--pine);margin:8px 0 10px 40px}
@@ -61,7 +61,7 @@ footer{text-align:center;color:var(--muted);font:400 18px var(--display);margin-
 <body>
 <a class="back" href="./">← назад в Котелок</a>
 <header>
-  <div class="pot">🍲</div>
+  <img class="pot" src="icon-192.png" alt="" width="64" height="64">
   <h1>Котелок</h1>
   <p>Как пользоваться — за 7 шагов</p>
 </header>
