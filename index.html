@@ -6,6 +6,16 @@
 <title>Котелок</title>
 <meta name="description" content="Раскладка продуктов для сплавов и походов. by Sega Mega">
 <meta name="theme-color" content="#1f5a75">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Котелок">
+<meta property="og:title" content="Котелок — раскладка продуктов для сплавов и походов">
+<meta property="og:description" content="Меню по дням → список закупки сам. Рецепты с пересчётом на группу, PDF для магазина. Бесплатно, работает на телефоне и без интернета.">
+<meta property="og:url" content="https://segapoz-dot.github.io/kotelok/">
+<meta property="og:image" content="https://segapoz-dot.github.io/kotelok/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Котелок">
@@ -564,7 +574,7 @@ function dayHTML(d) {
 function emptyHTML() {
   return `<div class="empty"><h2>Пока ни одного похода</h2>
     <p>Создайте поход: дни → завтрак, обед, ужин → блюда → продукты. Котелок сам сложит одинаковые продукты в список закупки.</p>
-    <div class="row"><button class="btn primary" data-act="newTrip">Создать поход</button><button class="btn" data-act="sample">Открыть пример «Юрюзань»</button></div></div>`;
+    <div class="row"><button class="btn primary" data-act="newTrip">Создать поход</button><button class="btn" data-act="sample">Открыть пример сплава на 12 чел.</button></div></div>`;
 }
 function renderMenu() {
   const t = trip();
@@ -766,65 +776,52 @@ async function doExport(kind, t) { if (kind.startsWith('pdf')) await loadQr().ca
 }
 
 // ---------- пример ----------
-const SAMPLE = `# 9 мая
+// Пример — реальная раскладка сплава-2026 на 12 человек (формат строки: продукт количество единица)
+const SAMPLE = `# Пятница
+## стапель
+### Пельмени + хот-доги
+пельмени 4.2 кг|масло сливочное 1 пачка|сосиски 12 шт|булочки для хот-догов 12 шт|огурцы маринованные резаные 2 банка|хлеб 2 батон
+## обед на воде
+### Нарезка
+икра кабачковая 3 банка|огурцы свежие 12 шт|сыр плавленый ванна 3 уп|грудинка копчёная 3 уп|соленья 3 банка|колбаса варёная 3 батон|батон 3 шт
+# Суббота
 ## завтрак
-яйцо 35|молоко 1|сосиски 4|батон 2|икра мойвы 4
-## обед
-батон 8|икра кобачок 4|огурец 4|сыр ванна 4|грудка копч 4|соленья кат 4|колбаса вареная 4
+### Рисовая каша на сгущёнке
+рис круглый 1 пачка (900 г)|сгущенка 1 банка|масло сливочное 1 пачка|батон 4 шт
+## обед на воде
+### Копчёное + Б/П
+колбаса копчёная 3 батон|соленья 3 банка|сыр творожный 3 уп|грудинка копчёная 3 уп|арахис 6 пачка|лапша Б/П 12 шт|пюре Б/П 12 шт|батон 3 шт
 ## ужин
 ### Лагман
-лапша лагман 4|перец бол 3|редька 2|морковь 2|лук 2|перец острый 2|кинза 1|сельдерей 1|говядина 2.3|томатная паста 1
-# 10 мая
+лапша лагман 4 пачка|индейка 2 кг|перец болгарский 3 шт|редька 2 шт|морковь 3 шт|лук 4 шт|перец острый 2 шт|кинза 1 пучок|сельдерей 1 шт|томаты протёртые 2 уп|хлеб 2 батон
+# Воскресенье
 ## завтрак
-### Рис с тушёнкой
-рис круглый 1|тушенка 3|лук 1
-###
-колбаса яичная 2|сыр твёрдый 1|батон 3
-## обед
-колбаса коп.кат 4|шпроты 4|соленья кат 4|сыр творож 8|батон 8|грудка-сало 4|арахис 8
-## ужин
-### Суп с курицей
-грибы шамп 3|бедро курин 17|картошка 2|морковь 2|лук 2|сыр ванна суп 3|укроп 1
-###
-хлеб 3
-# 11 мая
-## завтрак
-### Овсянка
-каша овсян 1|сгущ 1
-###
-колбаса яичная 3|батон 3
+### Овсяная каша
+овсянка 1 кг|сгущенка 1 банка|сахар 150 г|масло сливочное 1 пачка|батон 4 шт
 ## обед
 ### Солянка
-колбаса солянка 2|грудка копч 1|сосиски 2|томатная паста 1|тушенка 2|огурцы мар 2|оливки+маслины 2|каперсы 1|лимон 1|морковь 2|лук 1
-###
-хлеб 2
+колбаса 2 шт|грудинка копчёная 1 уп|сосиски 2 шт|тушенка 2 банка|огурцы маринованные 1 банка|маслины 2 банка|каперсы 1 банка|лимон 1 шт|томатная паста 1 уп|морковь 2 шт|лук 1 шт|хлеб 2 батон
 ## ужин
 ### Плов
-рис длинный 2|индейка 2.5|морковь 3|лук 3|зира 1|барбарис 1
-###
-помидоры 12|хлеб 2|лук красный 2
-# 12 мая
+рис длинный 2 пачка (1 кг)|индейка 2 кг|морковь 3 шт|лук 3 шт|зира 1 уп|барбарис 1 уп|масло растительное 1 бутылка (1 л)
+### Салат: помидоры с красным луком
+помидоры 12 шт|лук красный 2 шт
+# Понедельник
 ## завтрак
-### Греча с тушёнкой
-греча 2|тушенка 3|лук 2
-###
-грибы маринов 2|колбаса 3|сыр твёрдый 1|батон 2
-## выход
-сосиски 3|тушенка 2|суп пакет 4|лапша бп 3|хлеб 2
-# Общее
+### Гречка с тушёнкой
+гречка 1 пачка (800 г)|тушенка 4 банка|грибы маринованные 1 банка (большая)
+# На весь поход
 ## допы
-чай 5|кофе 1|сахар 2|соль 2|сгущ 3|грудка копч 3|сыр ванна 4|лаврушка 1|укроп 1|майонез 3|кетчуп 1|горчица 1|печенье 2|пряники 2|зефир 3|шпроты 2|масло подсолнечное 2|масло топленое 1
-## нз
-суп пакет 3|тушенка 3|картошка 1.5|ассорти овощ 3|маслины 2`;
+майонез 2 уп|кетчуп 2 уп|горчица 1 тюбик|сыр твёрдый 1 уп|колбаса яичная 5 шт`;
 function sampleTrip() {
-  const t = newTrip('Юрюзань (пример)'); t.days = [];
+  const t = newTrip('Сплав (пример, 12 чел.)'); t.days = []; t.basePeople = '12';
   let day, meal, dish;
   for (const raw of SAMPLE.split('\n')) {
     const l = raw.trim(); if (!l) continue;
     if (l.startsWith('###')) { dish = { id: uid(), name: l.slice(3).trim(), items: [] }; meal.dishes.push(dish); }
     else if (l.startsWith('## ')) { meal = { id: uid(), name: l.slice(3), dishes: [] }; day.meals.push(meal); dish = { id: uid(), name: '', items: [] }; meal.dishes.push(dish); }
     else if (l.startsWith('# ')) { day = { id: uid(), name: l.slice(2), meals: [] }; t.days.push(day); }
-    else for (const p of l.split('|')) { const m = p.match(/^(.*\S)\s+([\d.]+)$/); dish.items.push({ id: uid(), name: m[1], qty: m[2].replace('.', ','), unit: '' }); }
+    else for (const p of l.split('|')) { const m = p.match(/^(.+?)\s+([\d.]+)(?:\s+(.+))?$/); dish.items.push({ id: uid(), name: m[1], qty: m[2].replace('.', ','), unit: m[3] || '' }); }
   }
   t.days.forEach(d => d.meals.forEach(m => m.dishes = m.dishes.filter(ds => ds.items.length || ds.name)));
   return t;
@@ -1036,7 +1033,7 @@ document.addEventListener('click', async e => {
       const name = await ask({ title: 'Новый поход', input: 'Например: Юрюзань, май 2027', ok: 'Создать' }); if (!name) return;
       const nt = newTrip(name); TRIPS.push(nt); UI.current = nt.id; UI.tab = 'menu'; touch(nt); break;
     }
-    case 'sample': { const st = sampleTrip(); TRIPS.push(st); UI.current = st.id; UI.tab = 'menu'; touch(st); toast('Добавлен пример «Юрюзань»'); break; }
+    case 'sample': { const st = sampleTrip(); TRIPS.push(st); UI.current = st.id; UI.tab = 'menu'; touch(st); toast('Добавлен пример сплава на 12 человек'); break; }
     case 'renameTrip': {
       if (!t) return;
       const name = await ask({ title: 'Название похода', input: '', value: t.name, ok: 'Сохранить' }); if (!name) return;
@@ -1199,8 +1196,21 @@ addEventListener('online', () => syncSoon(300));
   g.innerHTML = s;
 })();
 
-loadLocal();
-readOAuthReturn();
+// ?demo=menu|list|recipes — витрина для скриншотов: пример похода в памяти, ничего не сохраняется и не синхронизируется
+const DEMO = new URLSearchParams(location.search).get('demo');
+if (DEMO) {
+  seedLibrary(); UI.libFix = 3;
+  const t = sampleTrip(); t.basePeople = '12'; t.people = '12';
+  aggregate(t).forEach((r, i) => { if (i % 3 === 0) t.bought.push(r.key); });
+  TRIPS = [t]; UI.current = t.id; UI.tab = ['menu', 'list', 'recipes'].includes(DEMO) ? DEMO : 'menu'; UI.hideInstall = true;
+  if (DEMO === 'recipes') UI.ropen[RECIPES.find(r => r.name === 'Плов').id] = true;
+  window.saveLocal = () => {}; yaToken = '';
+  const w = num(new URLSearchParams(location.search).get('w')); // ширина «телефона» для скриншота
+  if (w) { document.documentElement.style.maxWidth = w + 'px'; document.documentElement.style.overflowX = 'hidden'; }
+} else {
+  loadLocal();
+  readOAuthReturn();
+}
 $('#install').hidden = !(isIOS && !standalone && !UI.hideInstall);
 render();
 if (yaToken) sync(); loadQr().catch(() => {});
