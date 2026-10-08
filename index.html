@@ -145,7 +145,7 @@ footer .sig{font:400 17px var(--display);color:var(--water)}
 .sheet .opts .btn{justify-content:flex-start;padding:10px 12px}
 .mbtns{display:flex;justify-content:flex-end;gap:8px}
 .toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--paper);padding:9px 14px;border-radius:9px;font-size:13px;max-width:calc(100% - 32px);box-shadow:0 4px 18px rgba(0,0,0,.25)}
-#pdfroot{position:fixed;left:-10000px;top:0;width:760px}
+#pdfroot{position:fixed;left:-10000px;top:0;width:690px}
 
 @media (max-width:640px){
   .hero{height:calc(108px + env(safe-area-inset-top,0px))}
@@ -638,7 +638,7 @@ function updateTotals() { const s = fmt(total(aggregate(trip()))) + ' ₽'; $('#
 
 // ---------- PDF и файлы ----------
 const PDFCSS = `
-.pdf{width:740px;padding:6px 10px;background:#fff;color:#1b2a2f;font:13px/1.4 Rubik,Arial,sans-serif}
+.pdf{width:100%;max-width:690px;padding:4px 6px;overflow-wrap:break-word;background:#fff;color:#1b2a2f;font:13px/1.4 Rubik,Arial,sans-serif}
 .pd-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #d65f1d;padding-bottom:8px;margin-bottom:12px}
 .pd-brand{font-family:Neucha,cursive;color:#1f5a75;font-size:17px}
 .pd-title{font-size:23px;font-weight:700;line-height:1.15}
@@ -648,12 +648,12 @@ const PDFCSS = `
 .pdf td{padding:5px 7px;border-bottom:1px solid #ddd5c4}
 .pdf tbody tr:nth-child(even) td{background:#f6f3eb}
 .pdf .n{text-align:right;white-space:nowrap}
-.pdf .c{text-align:center;width:22px}
+.pdf .c{text-align:center;width:28px;white-space:nowrap}
 .pdf .box{display:inline-block;width:13px;height:13px;border:1.5px solid #1b2a2f;border-radius:3px}
 .pdf tfoot td{font-weight:700;border-top:2px solid #1b2a2f;border-bottom:none}
 .pd-day{margin:14px 0 4px;font-family:Neucha,cursive;font-size:22px;color:#2c5a3a;border-bottom:1px solid #ddd5c4}
 .pd-meal{display:flex;gap:10px;padding:4px 0;border-bottom:1px dashed #e4ddcf}
-.pd-meal>b{width:120px;flex:none;color:#d65f1d;font-weight:600}
+.pd-meal>div{min-width:0;flex:1}.pd-meal>b{width:105px;flex:none;color:#d65f1d;font-weight:600}
 .pd-dish{margin-bottom:2px}
 .pd-dish i{font-style:normal;font-weight:600}
 .pd-foot{margin-top:14px;color:#8a938f;font-size:11px;text-align:right;font-family:Neucha,cursive}`;
