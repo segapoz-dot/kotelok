@@ -221,6 +221,7 @@ footer .sig{font:400 17px var(--display);color:var(--water)}
   <nav class="tabs">
     <button data-tab="menu">Меню</button>
     <button data-tab="list">Продукты <span class="badge" id="pcount">0</span></button>
+    <button data-tab="recipes">Рецепты</button>
   </nav>
   <span class="sp"></span>
   <button class="btn primary" data-act="exportMenu">
@@ -236,6 +237,7 @@ footer .sig{font:400 17px var(--display);color:var(--water)}
   </div>
   <main id="menu"></main>
   <main id="list" hidden></main>
+  <main id="recipes" hidden></main>
 </div>
 
 <footer><div class="wrap">
@@ -287,7 +289,9 @@ const standalone = matchMedia('(display-mode: standalone)').matches || navigator
 
 // ---------- состояние ----------
 let TRIPS = [], PRICES = {}, PRICES_AT = 0, DELETED = {};
-let UI = { current: null, tab: 'menu', collapsed: {}, docPrices: true, hideInstall: false };
+// Книга рецептов и справочник упаковок синхронизируются вместе (LIB_AT — время последней правки)
+let RECIPES = [], PACKS = [], LIB_AT = 0;
+let UI = { current: null, tab: 'menu', collapsed: {}, docPrices: true, hideInstall: false, ropen: {} };
 let LV = { q: '', sort: 'az', hideBought: false };
 let yaToken = '';
 const SYNC = { state: 'off', at: 0 };
@@ -312,16 +316,20 @@ function loadLocal() {
     if (s) {
       TRIPS = (s.trips || []).map(normTrip); PRICES = s.prices || {}; PRICES_AT = s.pricesAt || 0;
       DELETED = s.deleted || {}; Object.assign(UI, s.ui || {}); sortTrips();
+      RECIPES = s.recipes || []; PACKS = s.packs || []; LIB_AT = s.libAt || 0;
     }
+    UI.ropen ||= {};
+    if (!LIB_AT && !RECIPES.length && !PACKS.length) seedLibrary();
     yaToken = localStorage.getItem(LS_TOKEN) || '';
   } catch (e) {}
 }
 function saveLocal() {
-  try { localStorage.setItem(LS, JSON.stringify({ trips: TRIPS, prices: PRICES, pricesAt: PRICES_AT, deleted: DELETED, ui: UI })); }
+  try { localStorage.setItem(LS, JSON.stringify({ trips: TRIPS, prices: PRICES, pricesAt: PRICES_AT, deleted: DELETED, recipes: RECIPES, packs: PACKS, libAt: LIB_AT, ui: UI })); }
   catch (e) { toast('Не удалось сохранить на устройстве — памяти браузера не хватает.'); }
 }
 const touch = t => { t.updated = Date.now(); saveLocal(); syncSoon(); };
 const touchPrices = () => { PRICES_AT = Date.now(); saveLocal(); syncSoon(); };
+const touchLib = () => { LIB_AT = Date.now(); saveLocal(); syncSoon(); };
 
 // ---------- Яндекс Диск ----------
 const yaRedirect = () => location.origin + location.pathname;
@@ -350,7 +358,7 @@ async function yaUpload(data) {
   const u = await fetch(href, { method: 'PUT', referrerPolicy: 'no-referrer', body: new Blob([JSON.stringify(data)], { type: 'application/json' }) });
   if (!u.ok) throw 'net';
 }
-const sig = d => stable({ trips: [...(d.trips || [])].map(normTrip).sort((a, b) => a.id < b.id ? -1 : 1), prices: d.prices || {}, pricesAt: d.pricesAt || 0, deleted: d.deleted || {} });
+const sig = d => stable({ trips: [...(d.trips || [])].map(normTrip).sort((a, b) => a.id < b.id ? -1 : 1), prices: d.prices || {}, pricesAt: d.pricesAt || 0, deleted: d.deleted || {}, recipes: d.recipes || [], packs: d.packs || [], libAt: d.libAt || 0 });
 function merge(r) {
   const del = { ...DELETED };
   for (const [id, ts] of Object.entries(r.deleted || {})) del[id] = Math.max(del[id] || 0, ts);
@@ -361,7 +369,9 @@ function merge(r) {
   const old = Date.now() - 365 * 864e5;
   for (const id of Object.keys(del)) if (del[id] < old) delete del[id];
   const remoteNewer = (r.pricesAt || 0) > PRICES_AT;
-  return { trips: [...map.values()], prices: remoteNewer ? (r.prices || {}) : PRICES, pricesAt: remoteNewer ? r.pricesAt : PRICES_AT, deleted: del };
+  const libNewer = (r.libAt || 0) > LIB_AT;
+  return { trips: [...map.values()], prices: remoteNewer ? (r.prices || {}) : PRICES, pricesAt: remoteNewer ? r.pricesAt : PRICES_AT, deleted: del,
+    recipes: libNewer ? (r.recipes || []) : RECIPES, packs: libNewer ? (r.packs || []) : PACKS, libAt: libNewer ? r.libAt : LIB_AT };
 }
 let syncing = false, syncAgain = false, syncTimer;
 function syncSoon(ms = 3000) { if (!yaToken) return; clearTimeout(syncTimer); syncTimer = setTimeout(() => sync(), ms); }
@@ -371,11 +381,12 @@ async function sync(manual) {
   syncing = true; SYNC.state = 'sync'; setStatus();
   try {
     const remote = await yaDownload();
-    const before = sig({ trips: TRIPS, prices: PRICES, pricesAt: PRICES_AT, deleted: DELETED });
+    const before = sig({ trips: TRIPS, prices: PRICES, pricesAt: PRICES_AT, deleted: DELETED, recipes: RECIPES, packs: PACKS, libAt: LIB_AT });
     const m = merge(remote || {});
     const localChanged = sig(m) !== before;
-    TRIPS = m.trips; PRICES = m.prices; PRICES_AT = m.pricesAt; DELETED = m.deleted; sortTrips(); saveLocal();
-    const body = { app: 'kotelok', v: 1, trips: TRIPS, prices: PRICES, pricesAt: PRICES_AT, deleted: DELETED };
+    TRIPS = m.trips; PRICES = m.prices; PRICES_AT = m.pricesAt; DELETED = m.deleted; sortTrips();
+    RECIPES = m.recipes; PACKS = m.packs; LIB_AT = m.libAt; saveLocal();
+    const body = { app: 'kotelok', v: 1, trips: TRIPS, prices: PRICES, pricesAt: PRICES_AT, deleted: DELETED, recipes: RECIPES, packs: PACKS, libAt: LIB_AT };
     if (!remote || sig(remote) !== sig(body)) await yaUpload({ ...body, savedAt: Date.now() });
     SYNC.state = 'ok'; SYNC.at = Date.now();
     if (localChanged) renderKeepFocus();
@@ -514,6 +525,7 @@ function itemHTML(i) {
 function dishHTML(ds) {
   return `<div class="dish" data-dish="${ds.id}">
     <div class="row">${inp('dish', ds.id, ds.name, 'блюдо (можно не писать)', 'dish-name')}
+      <button class="ib" data-act="saveRecipe" title="Сохранить блюдо в рецепты" aria-label="Сохранить блюдо в рецепты" tabindex="-1">⭐</button>
       <button class="ib danger" data-act="delDish" title="Удалить блюдо" aria-label="Удалить блюдо" tabindex="-1">✕</button></div>
     ${ds.items.map(itemHTML).join('')}
     <button class="add" data-act="addItem">+ продукт</button>
@@ -522,6 +534,7 @@ function dishHTML(ds) {
 function mealHTML(m) {
   return `<div class="meal" data-meal="${m.id}">
     <div class="row">${inp('meal', m.id, m.name, 'приём пищи', 'meal-name')}<span class="sp"></span>
+      <button class="add" data-act="fromRecipe">+ из рецепта</button>
       <button class="add" data-act="addDish">+ блюдо</button>
       <button class="ib danger" data-act="delMeal" title="Удалить приём пищи" aria-label="Удалить приём пищи" tabindex="-1">✕</button></div>
     ${m.dishes.map(dishHTML).join('')}
@@ -653,7 +666,8 @@ const PDFCSS = `
 .pdf tfoot td{font-weight:700;border-top:2px solid #1b2a2f;border-bottom:none}
 .pd-day{margin:14px 0 4px;font-family:Neucha,cursive;font-size:22px;color:#2c5a3a;border-bottom:1px solid #ddd5c4}
 .pd-meal{display:flex;gap:10px;padding:4px 0;border-bottom:1px dashed #e4ddcf}
-.pd-meal>div{min-width:0;flex:1}.pd-meal>b{width:105px;flex:none;color:#d65f1d;font-weight:600}
+.pd-meal>div{min-width:0;flex:1}
+.pd-meal>b{width:105px;flex:none;color:#d65f1d;font-weight:600}
 .pd-dish{margin-bottom:2px}
 .pd-dish i{font-style:normal;font-weight:600}
 .pd-foot{margin-top:14px;color:#8a938f;font-size:11px;font-family:Neucha,cursive;display:flex;justify-content:flex-end;align-items:center;gap:10px;text-align:right;page-break-inside:avoid}`;
@@ -812,6 +826,137 @@ function sampleTrip() {
   return t;
 }
 
+// ---------- рецепты ----------
+// Рецепт хранит количества «на serves человек»; при добавлении в меню всё пересчитывается и округляется вверх.
+const STARTER_PACKS = [
+  ['гречка', 'пачка', 800], ['рис круглый', 'пачка', 900], ['рис длинный', 'пачка', 1000], ['макароны', 'пачка', 450],
+  ['спагетти', 'пачка', 450], ['вермишель', 'пачка', 400], ['горох', 'пачка', 800], ['сахар', 'пачка', 1000],
+  ['грибы маринованные', 'банка', 280], ['масло растительное', 'бутылка', 1000]
+];
+// Формат: название | на сколько человек | пометка | продукт кол-во ед.; ...
+// Сплав-2026 на 12 человек — проверено в деле; хлеб и вода не включены
+const STARTER_RECIPES = `Пельмени + хот-доги|12|стапель, сплав-2026|пельмени 4,2 кг; масло сливочное 1 пачка; сосиски 12 шт; булочки для хот-догов 12 шт; огурцы маринованные резаные 2 банка
+Обед на воде: нарезка|12|сплав-2026|икра кабачковая 3 банка; огурцы свежие 12 шт; сыр плавленый ванна 3 уп; грудинка копчёная 3 уп; соленья 3 банка; колбаса варёная 3 батон
+Обед на воде: копчёное + Б/П|12|сплав-2026|колбаса копчёная 3 батон; соленья 3 банка; сыр творожный 3 уп; грудинка копчёная 3 уп; арахис 6 пачка; лапша Б/П 12 шт; пюре Б/П 12 шт
+Рисовая каша на сгущёнке|12|сплав-2026|рис круглый 900 г; сгущенка 1 банка; масло сливочное 1 пачка
+Овсяная каша|12|сплав-2026|овсянка 1 кг; сгущенка 1 банка; сахар 150 г; масло сливочное 1 пачка
+Гречка с тушёнкой|12|сплав-2026, грибы: 1 большая банка или 2 маленьких|гречка 1,2 кг; тушенка 4 банка; грибы маринованные 560 г
+Лагман|12|сплав-2026|лапша лагман 4 пачка; индейка 2 кг; перец болгарский 3 шт; редька 2 шт; морковь 3 шт; лук 4 шт; перец острый 2 шт; кинза 1 пучок; сельдерей 1 шт; томаты протёртые 2 уп
+Солянка|12|сплав-2026, лимон — один большой|колбаса 2 шт; грудинка копчёная 1 уп; сосиски 2 шт; тушенка 2 банка; огурцы маринованные 1 банка; маслины 2 банка; каперсы 1 банка; лимон 1 шт; томатная паста 1 уп; морковь 2 шт; лук 1 шт
+Плов|12|сплав-2026, масла 300 мл на 1 кг риса|рис длинный 2 кг; индейка 2 кг; морковь 3 шт; лук 3 шт; зира 1 уп; барбарис 1 уп; масло растительное 600 мл
+Салат: помидоры с красным луком|12|сплав-2026, помидор — 1 на человека, режем кольцами|помидоры 12 шт; лук красный 2 шт
+Допы и топинги|12|на весь поход, майонез с запасом|майонез 2 уп; кетчуп 2 уп; горчица 1 тюбик; сыр твёрдый 1 уп; колбаса яичная 5 шт
+Макароны по-флотски|1|стартовый — проверь нормы|макароны 150 г; тушенка 0,5 банка; лук 0,3 шт
+Рис с тушёнкой по-быстрому|1|стартовый — проверь нормы|рис длинный 120 г; тушенка 0,5 банка; лук 0,3 шт; морковь 0,3 шт
+Суп с тушёнкой|1|стартовый — проверь нормы|картошка 250 г; тушенка 0,3 банка; вермишель 30 г; морковь 0,3 шт; лук 0,3 шт
+Гороховый суп с копчёностями|1|стартовый — проверь нормы|горох 60 г; копчёности 80 г; картошка 150 г; морковь 0,3 шт; лук 0,3 шт
+Макароны с сыром и колбасой|1|стартовый — проверь нормы|макароны 150 г; сыр твёрдый 50 г; колбаса копчёная 70 г
+Шашлык|1|стартовый — проверь нормы|свинина 350 г; лук 0,5 шт; лаваш 0,5 шт`;
+function seedLibrary() {
+  PACKS = STARTER_PACKS.map(([name, pack, grams]) => ({ id: uid(), name, pack, grams: String(grams) }));
+  RECIPES = [];
+  for (const line of STARTER_RECIPES.split('\n')) {
+    const [name, serves, note, list] = line.split('|');
+    RECIPES.push({ id: uid(), name, serves, note, items: list.split(';').map(s => {
+      const m = s.trim().match(/^(.*\S)\s+([\d,]+)\s+(\S+)$/);
+      return { id: uid(), name: m[1], qty: m[2], unit: m[3] };
+    }) });
+  }
+  LIB_AT = 1; // «очень старый» — любая версия с Яндекс Диска важнее стартовой
+}
+const COUNT_UNIT = /^(шт|банк|пачк|уп|бут|ванн|пакет|плитк|голов|бат)/;
+const fmtq = n => String(Math.round(n * 100) / 100).replace('.', ',');
+const gramsLabel = g => g >= 1000 ? fmtq(g / 1000) + ' кг' : g + ' г';
+const packFor = name => PACKS.find(p => norm(p.name) === norm(name) && num(p.grams) > 0);
+function scaleItem(it, f) {
+  const q = num(it.qty), u = norm(it.unit);
+  if (!q) return { qty: it.qty, unit: it.unit };
+  const v = q * f, up = (x, step) => Math.ceil(x / step - 1e-9) * step;
+  const liquid = u === 'мл' || u === 'л';
+  if (u === 'г' || u === 'кг' || liquid) {
+    const g = u === 'кг' || u === 'л' ? v * 1000 : v, p = packFor(it.name);
+    const label = x => liquid ? (x >= 1000 ? fmtq(x / 1000) + ' л' : x + ' мл') : gramsLabel(x);
+    if (p) return { qty: String(up(g, num(p.grams)) / num(p.grams)), unit: `${p.pack || 'уп'} (${label(num(p.grams))})` };
+    return g >= 1000 ? { qty: fmtq(up(g / 1000, 0.1)), unit: liquid ? 'л' : 'кг' } : { qty: String(up(g, 10)), unit: liquid ? 'мл' : 'г' };
+  }
+  if (COUNT_UNIT.test(u) || Number.isInteger(Math.round(q * 1000) / 1000)) return { qty: String(up(v, 1)), unit: it.unit };
+  return { qty: fmtq(up(v, 0.1)), unit: it.unit };
+}
+function recipeToDish(r, people) {
+  const f = people / (num(r.serves) || 1);
+  return { id: uid(), name: r.name, items: r.items.filter(filled).map(it => ({ id: uid(), name: it.name.trim(), ...scaleItem(it, f) })) };
+}
+const recipeById = id => RECIPES.find(r => r.id === id);
+function ritemHTML(i) {
+  return `<div class="item" data-ritem="${i.id}">
+    ${inp('name', 'r' + i.id, i.name, 'продукт')}
+    <input data-f="qty" data-k="qty:r${i.id}" class="q" value="${esc(i.qty)}" inputmode="decimal" placeholder="кол-во" autocomplete="off">
+    ${inp('unit', 'r' + i.id, i.unit, 'г / шт')}
+    <button class="ib danger" data-act="delRItem" title="Удалить продукт" aria-label="Удалить продукт" tabindex="-1">✕</button>
+  </div>`;
+}
+function recipeHTML(r) {
+  const open = UI.ropen[r.id];
+  return `<section class="day ${open ? '' : 'collapsed'}" data-recipe="${r.id}">
+    <div class="day-head">
+      <button class="ib chev" data-act="toggleRecipe" title="Открыть / свернуть" aria-label="Открыть рецепт">▾</button>
+      ${inp('rname', r.id, r.name, 'Название блюда', 'day-name')}
+      <span class="count">на <input data-f="rserves" data-k="rserves:${r.id}" class="n" value="${esc(r.serves)}" inputmode="numeric" style="width:44px;text-align:right"> чел.</span>
+      <button class="ib" data-act="copyRecipe" title="Копия рецепта" aria-label="Копия рецепта">⧉</button>
+      <button class="ib danger" data-act="delRecipe" title="Удалить рецепт" aria-label="Удалить рецепт">✕</button>
+    </div>
+    <div class="day-body"><div class="meal">
+      ${r.note ? `<p class="hint" style="margin:0 0 6px">${esc(r.note)}</p>` : ''}
+      ${r.items.map(ritemHTML).join('')}
+      <button class="add" data-act="addRItem">+ продукт</button>
+    </div></div>
+  </section>`;
+}
+function renderRecipes() {
+  const list = [...RECIPES].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+  $('#recipes').innerHTML = `
+    <p class="hint">Рецепт — это блюдо с продуктами на указанное число людей. В меню жми «+ из рецепта»: Котелок пересчитает на ваш состав и округлит вверх. Граммы продуктов из «Упаковок» превращаются в целые пачки. Любое блюдо из меню можно сохранить сюда звёздочкой ⭐.</p>
+    ${list.map(recipeHTML).join('') || '<div class="empty"><p>Рецептов пока нет.</p></div>'}
+    <button class="add big" data-act="addRecipe">+ Новый рецепт</button>
+    <h3 style="font:400 22px var(--display);color:var(--pine);margin:22px 2px 4px">Упаковки</h3>
+    <p class="hint" style="margin-top:0">Если в рецепте продукт указан в граммах и он есть в этом списке — в меню он попадёт целыми упаковками. Например, макароны 150 г × 8 чел. = 3 пачки (450 г).</p>
+    <div class="panel" style="display:block">
+      ${PACKS.map(p => `<div class="item" data-pack="${p.id}" style="grid-template-columns:minmax(0,1fr) 90px 70px 28px">
+        <input data-f="pname" data-k="pname:${p.id}" value="${esc(p.name)}" placeholder="продукт" autocomplete="off">
+        <input data-f="ppack" data-k="ppack:${p.id}" value="${esc(p.pack)}" placeholder="пачка" autocomplete="off">
+        <input data-f="pgrams" data-k="pgrams:${p.id}" class="q" value="${esc(p.grams)}" inputmode="numeric" placeholder="грамм" autocomplete="off">
+        <button class="ib danger" data-act="delPack" title="Удалить" aria-label="Удалить упаковку" tabindex="-1">✕</button></div>`).join('')}
+      <button class="add" data-act="addPack">+ упаковка</button>
+    </div>`;
+}
+function libCtx(el) {
+  const r = recipeById(el.closest('[data-recipe]')?.dataset.recipe);
+  const item = r?.items.find(i => i.id === el.closest('[data-ritem]')?.dataset.ritem);
+  const pack = PACKS.find(p => p.id === el.closest('[data-pack]')?.dataset.pack);
+  return { r, item, pack };
+}
+async function addFromRecipe(t, meal) {
+  if (!RECIPES.length) { toast('Рецептов пока нет — загляни во вкладку «Рецепты»'); return; }
+  const list = [...RECIPES].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+  const id = await ask({ title: 'Блюдо из рецепта', text: 'Выбери блюдо — дальше спрошу, на сколько человек.', options: list.map(r => ({ label: `${r.name} · на ${r.serves || 1} чел.`, value: r.id })) });
+  const r = recipeById(id); if (!r) return;
+  const n = await ask({ title: r.name, text: 'На сколько человек готовим?', input: 'человек', value: String(t.people || t.basePeople || ''), ok: 'Добавить' });
+  const people = num(n); if (!(people > 0)) return;
+  const ds = recipeToDish(r, people);
+  const first = meal.dishes[0];
+  if (meal.dishes.length === 1 && !norm(first.name) && !first.items.some(filled)) meal.dishes = [];
+  meal.dishes.push(ds); touch(t); saveLocal(); render();
+  toast(`«${r.name}» на ${people} чел. добавлен`);
+}
+async function saveAsRecipe(t, dish) {
+  if (!dish.items.some(filled)) { toast('В блюде пока нет продуктов'); return; }
+  const n = await ask({ title: 'Сохранить в рецепты', text: `«${dish.name || 'Блюдо без названия'}» — на сколько человек рассчитаны эти количества?`, input: 'человек', value: String(t.basePeople || ''), ok: 'Сохранить' });
+  if (!(num(n) > 0)) return;
+  const r = { id: uid(), name: norm(dish.name) ? dish.name.trim() : 'Блюдо без названия', serves: String(num(n)), note: 'из похода «' + t.name + '»',
+    items: dish.items.filter(filled).map(i => ({ id: uid(), name: i.name.trim(), qty: i.qty, unit: i.unit })) };
+  RECIPES.push(r); UI.ropen[r.id] = true; touchLib(); toast(`Рецепт «${r.name}» сохранён`);
+}
+
 // ---------- общий рендер ----------
 function renderTrips() {
   const s = $('#trip');
@@ -823,8 +968,9 @@ function renderTab() {
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === UI.tab));
   $('#menu').hidden = UI.tab !== 'menu';
   $('#list').hidden = UI.tab !== 'list';
+  $('#recipes').hidden = UI.tab !== 'recipes';
 }
-function render() { renderTrips(); renderMenu(); renderList(); renderTab(); setStatus(); }
+function render() { renderTrips(); renderMenu(); renderList(); renderRecipes(); renderTab(); setStatus(); }
 function keepFocus(fn) {
   const a = document.activeElement, k = a && a.dataset && a.dataset.k;
   const s = k ? [a.selectionStart, a.selectionEnd] : null;
@@ -842,7 +988,20 @@ document.addEventListener('click', async e => {
   const { t, day, meal, dish, item } = ctx(b);
   const act = b.dataset.act;
   let focus = null;
+  const lib = libCtx(b);
   switch (act) {
+    case 'fromRecipe': addFromRecipe(t, meal); return;
+    case 'saveRecipe': saveAsRecipe(t, dish); return;
+    case 'addRecipe': { const r = { id: uid(), name: '', serves: '1', items: [newItem()] }; RECIPES.push(r); UI.ropen[r.id] = true; touchLib(); renderRecipes(); $(`[data-k="rname:${r.id}"]`)?.focus(); return; }
+    case 'toggleRecipe': UI.ropen[lib.r.id] = !UI.ropen[lib.r.id]; saveLocal(); renderRecipes(); return;
+    case 'copyRecipe': { const c = JSON.parse(JSON.stringify(lib.r)); c.id = uid(); c.name += ' (копия)'; c.items.forEach(i => i.id = uid()); RECIPES.push(c); UI.ropen[c.id] = true; touchLib(); renderRecipes(); return; }
+    case 'delRecipe':
+      if (!await ask({ title: 'Удалить рецепт?', text: `«${lib.r.name || 'Без названия'}» удалится из книги рецептов. Блюда, уже добавленные в меню, останутся.`, ok: 'Удалить', danger: true })) return;
+      RECIPES = RECIPES.filter(r => r !== lib.r); touchLib(); renderRecipes(); return;
+    case 'addRItem': { const i = newItem(); lib.r.items.push(i); touchLib(); renderRecipes(); $(`[data-k="name:r${i.id}"]`)?.focus(); return; }
+    case 'delRItem': lib.r.items = lib.r.items.filter(i => i !== lib.item); touchLib(); keepFocus(renderRecipes); return;
+    case 'addPack': { const p = { id: uid(), name: '', pack: 'пачка', grams: '' }; PACKS.push(p); touchLib(); renderRecipes(); $(`[data-k="pname:${p.id}"]`)?.focus(); return; }
+    case 'delPack': PACKS = PACKS.filter(p => p !== lib.pack); touchLib(); renderRecipes(); return;
     case 'syncMenu': syncMenu(); return; case 'donate': await loadQr().catch(() => {}); ask({ title: 'Поддержать автора', html: '<span style="display:block;margin-bottom:10px">Котелок бесплатный и без рекламы. Если пригодился в походе — подкинь автору на тушёнку 🥫</span><span style="display:flex;justify-content:center">' + qrImg(DONATE_URL, 170) + '</span><span style="display:block;text-align:center;font-size:12px;margin-top:6px">Наведи камеру телефона на QR-код или нажми кнопку ниже</span>', options: [{ label: '☕ Поддержать через ЮMoney', primary: true, run: () => window.open(DONATE_URL, '_blank') }] }); return;
     case 'hideInstall': UI.hideInstall = true; saveLocal(); $('#install').hidden = true; return;
     case 'newTrip': {
@@ -895,7 +1054,7 @@ document.addEventListener('click', async e => {
       meal.dishes = meal.dishes.filter(d => d !== dish); touch(t); break;
     case 'addItem': { const i = newItem(); dish.items.push(i); touch(t); focus = () => focusItem(i.id); break; }
     case 'delItem': dish.items = dish.items.filter(i => i !== item); touch(t); break;
-    case 'backup': saveFile(`kotelok-копия-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify({ app: 'kotelok', trips: TRIPS, prices: PRICES }, null, 1), 'application/json'); return;
+    case 'backup': saveFile(`kotelok-копия-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify({ app: 'kotelok', trips: TRIPS, prices: PRICES, recipes: RECIPES, packs: PACKS }, null, 1), 'application/json'); return;
     case 'restore': $('#file').click(); return;
   }
   saveLocal(); render(); if (focus) focus();
@@ -905,6 +1064,18 @@ document.addEventListener('input', e => {
   const el = e.target;
   if (el.id === 'minput') return;
   if (el.id === 'q') { LV.q = el.value; keepFocus(renderList); return; }
+  if (el.closest('#recipes')) {
+    const f = el.dataset.f; if (!f) return;
+    if (f === 'name' || f === 'unit') autocomplete(el, e);
+    const { r, item, pack } = libCtx(el);
+    if (f === 'rname') r.name = el.value;
+    else if (f === 'rserves') r.serves = el.value.trim();
+    else if (f === 'pname') pack.name = el.value;
+    else if (f === 'ppack') pack.pack = el.value;
+    else if (f === 'pgrams') pack.grams = el.value.trim();
+    else if (item) item[f] = el.value;
+    touchLib(); return;
+  }
   const t = trip(); if (!t) return;
   if (el.id === 'basePeople' || el.id === 'people') { t[el.id] = el.value.trim(); touch(t); keepFocus(renderList); return; }
   if (el.dataset.price !== undefined) {
@@ -946,11 +1117,16 @@ document.addEventListener('change', e => {
       if (!await ask({ title: 'Открыть файл?', text: `Походов в файле: ${incoming.length} — ${names}.\nЕсли такой поход уже есть, он заменится версией из файла.`, ok: 'Открыть' })) return;
       for (const t of incoming) { TRIPS = TRIPS.filter(x => x.id !== t.id); delete DELETED[t.id]; t.updated = Date.now(); TRIPS.push(t); }
       for (const [k, v] of Object.entries(s.prices || {})) if (!(k in PRICES)) PRICES[k] = v;
+      if (Array.isArray(s.recipes) && s.recipes.length) {
+        for (const r of s.recipes) if (!RECIPES.some(x => x.id === r.id)) RECIPES.push(r);
+        for (const p of s.packs || []) if (!PACKS.some(x => norm(x.name) === norm(p.name))) PACKS.push(p);
+        touchLib();
+      }
       sortTrips(); UI.current = incoming[0]?.id || UI.current; touchPrices(); render(); toast('Готово');
     });
     return;
   }
-  if (el.dataset.f) {
+  if (el.dataset.f && trip() && !el.closest('#recipes')) {
     const day = el.closest('[data-day]');
     if (day) { const d = trip().days.find(x => x.id === day.dataset.day); if (d) day.querySelector('[data-count]').textContent = dayCount(d) + ' прод.'; }
     $('#pcount').textContent = aggregate(trip()).length;
@@ -969,6 +1145,10 @@ document.addEventListener('keydown', e => {
   if (f === 'qty' || f === 'unit') {
     const next = el.closest('.item').nextElementSibling;
     if (next && next.classList.contains('item')) { next.querySelector('[data-f="name"]').focus(); return; }
+    if (el.closest('#recipes')) {
+      const { r } = libCtx(el); if (!r) return;
+      const i = newItem(); r.items.push(i); touchLib(); renderRecipes(); $(`[data-k="name:r${i.id}"]`)?.focus(); return;
+    }
     const { t, dish } = ctx(el);
     const i = newItem(); dish.items.push(i); touch(t);
     renderMenu(); focusItem(i.id); return;
