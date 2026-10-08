@@ -55,7 +55,7 @@ button{-webkit-tap-highlight-color:transparent}
 .brand p{margin:2px 0 0;font-size:13px;opacity:.95}
 .hero-r{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .by{font:400 15px var(--display);opacity:.95;text-shadow:0 1px 3px rgba(0,0,0,.35)}
-.sync{font-size:12px;background:rgba(0,0,0,.3);color:#fff;border:none;padding:4px 10px;border-radius:20px;white-space:nowrap;cursor:pointer}
+.donate{background:var(--raft)!important;color:var(--raft-ink)!important;font-weight:600}.sync{font-size:12px;background:rgba(0,0,0,.3);color:#fff;border:none;padding:4px 10px;border-radius:20px;white-space:nowrap;cursor:pointer}
 
 /* панель */
 .bar{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--line)}
@@ -207,7 +207,7 @@ footer .sig{font:400 17px var(--display);color:var(--water)}
       </div>
     </div>
     <div class="hero-r">
-      <span class="by">by Sega Mega</span>
+      <span class="by">by Sega Mega</span><button class="sync donate" data-act="donate">☕ Поддержать автора</button>
       <button class="sync" id="sync" data-act="syncMenu">на этом устройстве</button>
     </div>
   </div>
@@ -241,7 +241,7 @@ footer .sig{font:400 17px var(--display);color:var(--water)}
 <footer><div class="wrap">
   <span class="sig">Котелок · придумал Sega Mega</span>
   <span class="sp"></span>
-  <button class="btn" data-act="syncMenu">Яндекс Диск</button>
+  <button class="btn primary" data-act="donate">☕ Поддержать автора</button><button class="btn" data-act="syncMenu">Яндекс Диск</button>
   <button class="btn" data-act="backup">Сохранить копию</button>
   <button class="btn" data-act="restore">Открыть файл</button>
   <button class="btn" data-act="sample">Пример похода</button>
@@ -263,7 +263,7 @@ footer .sig{font:400 17px var(--display);color:var(--water)}
 <script>
 // ===== Настройка Яндекс Диска =====
 // ClientID приложения с https://oauth.yandex.ru (права: «Доступ к папке приложения на Диске»).
-const YANDEX_CLIENT_ID = 'f6da39ae95864c48bde210577fc8ec47';
+const YANDEX_CLIENT_ID = 'f6da39ae95864c48bde210577fc8ec47'; const DONATE_URL = 'https://yoomoney.ru/fundraise/1KPCEM94J3O.261008'; let QR = null; function loadQr() { return QR || (QR = new Promise((ok, fail) => { const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'; s.onload = ok; s.onerror = () => { QR = null; fail(); }; document.head.appendChild(s); })); } const qrImg = (text, size) => { if (!window.qrcode) return ''; const q = qrcode(0, 'M'); q.addData(text); q.make(); return '<img alt="QR" width="' + size + '" height="' + size + '" style="image-rendering:pixelated" src="' + q.createDataURL(8, 2) + '">'; };
 
 const MEALS = ['завтрак','обед','ужин','перекус','на катамаране','выход','допы','нз'];
 const UNITS = ['шт','кг','г','л','уп','банка','пачка','бутылка'];
@@ -436,10 +436,10 @@ async function syncMenu() {
 }
 
 // ---------- окна и уведомления ----------
-function ask({ title, text = '', input = null, value = '', ok = 'OK', danger = false, options = null }) {
+function ask({ title, html = '', text = '', input = null, value = '', ok = 'OK', danger = false, options = null }) {
   return new Promise(res => {
     const m = $('#modal'), f = $('#mform'), i = $('#minput'), opts = $('#mopts');
-    $('#mtitle').textContent = title; $('#mtext').textContent = text; $('#mtext').hidden = !text;
+    $('#mtitle').textContent = title; if (html) $('#mtext').innerHTML = html; else $('#mtext').textContent = text; $('#mtext').hidden = !text && !html;
     i.hidden = input === null; i.placeholder = input || ''; i.value = value;
     opts.innerHTML = ''; opts.hidden = !options;
     (options || []).forEach(o => {
@@ -656,11 +656,11 @@ const PDFCSS = `
 .pd-meal>div{min-width:0;flex:1}.pd-meal>b{width:105px;flex:none;color:#d65f1d;font-weight:600}
 .pd-dish{margin-bottom:2px}
 .pd-dish i{font-style:normal;font-weight:600}
-.pd-foot{margin-top:14px;color:#8a938f;font-size:11px;text-align:right;font-family:Neucha,cursive}`;
+.pd-foot{margin-top:14px;color:#8a938f;font-size:11px;font-family:Neucha,cursive;display:flex;justify-content:flex-end;align-items:center;gap:10px;text-align:right;page-break-inside:avoid}`;
 function pdfShell(title, sub, body) {
   return `<div class="pdf"><style>${PDFCSS}</style>
     <div class="pd-head"><div><div class="pd-title">${esc(title)}</div><div class="pd-sub">${sub}</div></div><div class="pd-brand">Котелок</div></div>
-    ${body}<div class="pd-foot">Котелок · by Sega Mega</div></div>`;
+    ${body}<div class="pd-foot"><div><div>Сделано в Котелке · by Sega Mega</div><div>Понравилось? Поддержи автора: ${DONATE_URL.replace('https://', '')}</div></div>${qrImg(DONATE_URL, 64)}</div></div>`;
 }
 function peopleNote(t) {
   if (factor(t) !== 1) return ` · пересчитано на ${esc(t.people)} чел. (меню на ${esc(t.basePeople)})`;
@@ -736,7 +736,7 @@ async function saveFile(name, data, type) {
 }
 const csvNum = n => String(Math.round(n * 100) / 100).replace('.', ',');
 const toCsv = rows => '﻿' + rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(';')).join('\r\n');
-function doExport(kind, t) {
+async function doExport(kind, t) { if (kind.startsWith('pdf')) await loadQr().catch(() => {});
   if (kind === 'pdfList') makePdf(listPdfHTML(t), `${safeName(t.name)} — список закупки.pdf`);
   else if (kind === 'pdfMenu') makePdf(menuPdfHTML(t), `${safeName(t.name)} — меню.pdf`);
   else if (kind === 'tripFile') saveFile(`${safeName(t.name)}.kotelok.json`, JSON.stringify({ app: 'kotelok', trips: [t], prices: PRICES }, null, 1), 'application/json');
@@ -843,7 +843,7 @@ document.addEventListener('click', async e => {
   const act = b.dataset.act;
   let focus = null;
   switch (act) {
-    case 'syncMenu': syncMenu(); return;
+    case 'syncMenu': syncMenu(); return; case 'donate': await loadQr().catch(() => {}); ask({ title: 'Поддержать автора', html: '<span style="display:block;margin-bottom:10px">Котелок бесплатный и без рекламы. Если пригодился в походе — подкинь автору на тушёнку 🥫</span><span style="display:flex;justify-content:center">' + qrImg(DONATE_URL, 170) + '</span><span style="display:block;text-align:center;font-size:12px;margin-top:6px">Наведи камеру телефона на QR-код или нажми кнопку ниже</span>', options: [{ label: '☕ Поддержать через ЮMoney', primary: true, run: () => window.open(DONATE_URL, '_blank') }] }); return;
     case 'hideInstall': UI.hideInstall = true; saveLocal(); $('#install').hidden = true; return;
     case 'newTrip': {
       const name = await ask({ title: 'Новый поход', input: 'Например: Юрюзань, май 2027', ok: 'Создать' }); if (!name) return;
@@ -995,7 +995,7 @@ loadLocal();
 readOAuthReturn();
 $('#install').hidden = !(isIOS && !standalone && !UI.hideInstall);
 render();
-if (yaToken) sync();
+if (yaToken) sync(); loadQr().catch(() => {});
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body>
