@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Котелок — как пользоваться</title>
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Neucha&family=Rubik:wght@400;500;700&display=swap">
+<style>
+/* Памятка в стиле Котелка: шаги-карточки, «нарисованные» кнопки и большие оранжевые стрелки */
+:root{
+  --rock:#ebe6da; --paper:#fbfaf5; --ink:#1b2a2f; --muted:#5f6b67; --line:#d8d0bf;
+  --water:#1f5a75; --water-soft:#dde9ef; --pine:#2c5a3a; --pine-soft:#e4ece2; --raft:#d65f1d;
+  --display:"Neucha","Segoe Print",cursive; --body:"Rubik",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--rock);color:var(--ink);font:17px/1.45 var(--body)}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px 40px}
+header{background:linear-gradient(180deg,#4f92c9,#2a6b88);color:#fff;text-align:center;padding:22px 16px 26px;border-radius:0 0 22px 22px}
+header h1{font:400 44px/1 var(--display);margin:0}
+header p{margin:6px 0 0;font-size:16px;opacity:.95}
+.pot{font-size:42px}
+.step{background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:16px 16px 18px;margin:18px 0;position:relative}
+.num{position:absolute;top:-16px;left:14px;background:var(--raft);color:#fff;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 22px var(--body);box-shadow:0 2px 0 rgba(0,0,0,.15)}
+.step h2{font:400 28px/1.1 var(--display);color:var(--pine);margin:8px 0 10px 40px}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.arrow{color:var(--raft);font-size:30px;font-weight:700;line-height:1}
+.b{display:inline-flex;align-items:center;gap:6px;border-radius:10px;padding:8px 12px;font-weight:600;border:2px solid var(--line);background:#fff;white-space:nowrap}
+.b.or{background:var(--raft);border-color:var(--raft);color:#fff}
+.b.blue{background:var(--water-soft);border-color:#b9d3df;color:var(--water)}
+.b.dash{border-style:dashed;color:var(--water);background:transparent}
+.b.ios{background:#f2f2f7;border-color:#d1d1d6;color:#007aff}
+.note{color:var(--muted);font-size:15px;margin:10px 0 0}
+.tip{background:var(--pine-soft);border-radius:12px;padding:10px 12px;margin-top:12px;font-size:15px}
+.tip b{color:var(--pine)}
+.big{font-size:20px}
+.or-text{color:var(--muted);font-size:15px}
+.back{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:10px;z-index:5;background:rgba(0,0,0,.35);color:#fff;text-decoration:none;font-size:14px;padding:6px 12px;border-radius:20px}
+footer{text-align:center;color:var(--muted);font:400 18px var(--display);margin-top:24px}
+@media (max-width:520px){ body{font-size:16px} .step h2{font-size:24px} .arrow{font-size:24px} .b{padding:7px 10px} }
+@page{size:A4;margin:10mm}
+@media print{
+  body{background:#fff;font-size:14px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .wrap{max-width:none;padding:0 4px}
+  header{border-radius:14px;padding:12px 16px 14px} header h1{font-size:34px} .pot{font-size:30px}
+  .step{break-inside:avoid;page-break-inside:avoid;margin:12px 0 0;padding:10px 14px 12px}
+  .step h2{font-size:23px;margin:2px 0 8px 44px}
+  .num{width:34px;height:34px;font-size:18px;top:8px;left:12px}
+  .b{padding:5px 9px} .arrow{font-size:22px} .flow{gap:7px} .note,.tip{font-size:13px}
+  .back{display:none}
+  footer{break-inside:avoid;margin-top:12px}
+}
+</style>
+</head>
+<body>
+<a class="back" href="./">← назад в Котелок</a>
+<header>
+  <div class="pot">🍲</div>
+  <h1>Котелок</h1>
+  <p>Как пользоваться — за 7 шагов</p>
+</header>
+
+<div class="wrap">
+
+  <section class="step">
+    <div class="num">1</div>
+    <h2>Поставь на телефон</h2>
+    <div class="flow">
+      <span class="b ios">Safari</span><span class="arrow">→</span>
+      <span class="b ios">Поделиться ⬆︎</span><span class="arrow">→</span>
+      <span class="b ios">На экран «Домой»</span>
+    </div>
+    <p class="note">Появится значок с котелком — открывай его, как обычное приложение. На Android: Chrome → ⋮ → «Добавить на главный экран».</p>
+  </section>
+
+  <section class="step">
+    <div class="num">2</div>
+    <h2>Создай поход</h2>
+    <div class="flow">
+      <span class="b">＋</span><span class="arrow">→</span>
+      <span class="b blue">«Юрюзань, май»</span><span class="arrow">→</span>
+      <span class="b or">Создать</span>
+    </div>
+    <p class="note">Кнопка «＋» — вверху, рядом с названием похода.</p>
+  </section>
+
+  <section class="step">
+    <div class="num">3</div>
+    <h2>Заполни меню</h2>
+    <div class="flow big">
+      <span class="b blue">День</span><span class="arrow">→</span>
+      <span class="b blue">Завтрак / обед / ужин</span><span class="arrow">→</span>
+      <span class="b dash">+ из рецепта</span>
+    </div>
+    <div class="flow" style="margin-top:10px">
+      <span class="b">Плов</span><span class="arrow">→</span>
+      <span class="b blue">Сколько человек? 12</span><span class="arrow">→</span>
+      <span class="b or">Добавить</span>
+    </div>
+    <p class="note">Котелок сам посчитает продукты на ваш состав. <span class="or-text">Или жми</span> <span class="b dash" style="padding:3px 8px">+ продукт</span> <span class="or-text">и пиши сам.</span></p>
+    <div class="tip"><b>Подсказка:</b> начни писать «ту…» — допишется «тушёнка». Нажми <b>Enter</b>, чтобы принять.</div>
+  </section>
+
+  <section class="step">
+    <div class="num">4</div>
+    <h2>Смотри список продуктов</h2>
+    <div class="flow">
+      <span class="b blue">Вкладка «Продукты»</span><span class="arrow">→</span>
+      <span class="b">всё уже сложено ✔</span>
+    </div>
+    <p class="note">Одинаковые продукты из всех дней собраны в одну строку. Можно вписать цены — посчитается сумма. Едет больше людей? Впиши «Едет … чел.» — всё пересчитается.</p>
+  </section>
+
+  <section class="step">
+    <div class="num">5</div>
+    <h2>Сохрани и распечатай</h2>
+    <div class="flow">
+      <span class="b or">⬇ Сохранить PDF</span><span class="arrow">→</span>
+      <span class="b">Список закупки</span><span class="or-text">или</span>
+      <span class="b">Меню по дням</span>
+    </div>
+    <p class="note">PDF можно распечатать или отправить в Telegram.</p>
+  </section>
+
+  <section class="step">
+    <div class="num">6</div>
+    <h2>В магазине</h2>
+    <div class="flow">
+      <span class="b blue">Продукты</span><span class="arrow">→</span>
+      <span class="b">☑ купил — ставь галочку</span>
+    </div>
+    <p class="note">Купленное зачёркивается. «Скрыть купленное» — останется только то, что ещё надо взять.</p>
+  </section>
+
+  <section class="step">
+    <div class="num">7</div>
+    <h2>Телефон + компьютер вместе</h2>
+    <div class="flow">
+      <span class="b blue">«на этом устройстве»</span><span class="arrow">→</span>
+      <span class="b or">Войти через Яндекс</span><span class="arrow">→</span>
+      <span class="b">Разрешить</span>
+    </div>
+    <p class="note">Кнопка — вверху справа. Сделай так на каждом устройстве: походы станут одинаковыми везде.</p>
+    <div class="tip"><b>Любимое блюдо?</b> Нажми ⭐ рядом с ним в меню — оно сохранится в «Рецепты» на следующий поход.</div>
+  </section>
+
+  <footer><span style="font-size:52px;line-height:1">😋</span><br>Приятного аппетита!<br>Котелок · by Sega Mega</footer>
+</div>
+</body>
+</html>
