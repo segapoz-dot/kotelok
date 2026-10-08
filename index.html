@@ -94,6 +94,12 @@ main{padding-block:6px 30px}
 .day-head{display:flex;gap:2px;align-items:center;padding:5px 6px;background:var(--pine-soft);border-bottom:1px solid var(--line)}
 .day-name{font:400 21px/1.1 var(--display);color:var(--pine);flex:1;background:transparent;border-color:transparent}
 .count{color:var(--muted);font-size:12px;white-space:nowrap;margin-right:4px}
+.rtitle{flex:1;min-width:0;background:none;border:none;text-align:left;cursor:pointer;padding:4px 6px;display:flex;flex-direction:column;gap:1px}
+.day-name-text{font:400 21px/1.15 var(--display);color:var(--pine);overflow-wrap:anywhere}
+.fav{font-size:20px;padding:4px 6px}
+.seg{display:inline-flex;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px;margin:4px 0 4px}
+.seg button{background:none;border:none;border-radius:7px;padding:6px 12px;cursor:pointer;font-weight:600;color:var(--muted)}
+.seg button.on{background:var(--pine-soft);color:var(--ink)}
 .chev{transition:transform .15s}
 .collapsed .day-body{display:none}
 .collapsed .day-head{border-bottom:none}
@@ -920,28 +926,53 @@ function ritemHTML(i) {
     <button class="ib danger" data-act="delRItem" title="Удалить продукт" aria-label="Удалить продукт" tabindex="-1">✕</button>
   </div>`;
 }
+const favBtn = r => `<button class="ib fav" data-act="favRecipe" title="${r.fav ? 'Убрать из избранного' : 'В избранное'}" aria-label="${r.fav ? 'Убрать из избранного' : 'Добавить в избранное'}" aria-pressed="${!!r.fav}">${r.fav ? '❤️' : '🤍'}</button>`;
 function recipeHTML(r) {
-  const open = UI.ropen[r.id];
-  return `<section class="day ${open ? '' : 'collapsed'}" data-recipe="${r.id}">
+  if (!UI.ropen[r.id]) return `<section class="day collapsed" data-recipe="${r.id}">
     <div class="day-head">
-      <button class="ib chev" data-act="toggleRecipe" title="Открыть / свернуть" aria-label="Открыть рецепт">▾</button>
+      <button class="rtitle" data-act="toggleRecipe" title="Открыть рецепт">
+        <span class="day-name-text">${esc(r.name || 'Без названия')}</span>
+        <span class="count">на ${esc(r.serves || 1)} чел. · ${r.items.filter(filled).length} прод.</span>
+      </button>
+      ${favBtn(r)}
+      <button class="add" data-act="toggleRecipe">✎ Изменить</button>
+    </div>
+  </section>`;
+  return `<section class="day" data-recipe="${r.id}">
+    <div class="day-head">
       ${inp('rname', r.id, r.name, 'Название блюда', 'day-name')}
-      <span class="count">на <input data-f="rserves" data-k="rserves:${r.id}" class="n" value="${esc(r.serves)}" inputmode="numeric" style="width:44px;text-align:right"> чел.</span>
-      <button class="ib" data-act="copyRecipe" title="Копия рецепта" aria-label="Копия рецепта">⧉</button>
-      <button class="ib danger" data-act="delRecipe" title="Удалить рецепт" aria-label="Удалить рецепт">✕</button>
+      ${favBtn(r)}
     </div>
     <div class="day-body"><div class="meal">
-      ${r.note ? `<p class="hint" style="margin:0 0 6px">${esc(r.note)}</p>` : ''}
+      <div class="row" style="flex-wrap:wrap;gap:6px 10px;margin-bottom:6px">
+        <label class="count" style="display:inline-flex;align-items:center;gap:5px">Количества на <input data-f="rserves" data-k="rserves:${r.id}" class="n" value="${esc(r.serves)}" inputmode="numeric" style="width:52px;text-align:right"> чел.</label>
+        ${r.note ? `<span class="hint" style="margin:0">${esc(r.note)}</span>` : ''}
+      </div>
       ${r.items.map(ritemHTML).join('')}
       <button class="add" data-act="addRItem">+ продукт</button>
+      <div class="row" style="flex-wrap:wrap;gap:8px;margin-top:12px">
+        <button class="btn primary" data-act="doneRecipe">✓ Сохранить</button>
+        <button class="btn" data-act="copyRecipe">⧉ Копия</button>
+        <span class="sp"></span>
+        <button class="btn" data-act="delRecipe" style="color:var(--danger)">🗑 Удалить</button>
+      </div>
     </div></div>
   </section>`;
 }
 function renderRecipes() {
-  const list = [...RECIPES].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+  const favFirst = (a, b) => (b.fav ? 1 : 0) - (a.fav ? 1 : 0) || a.name.localeCompare(b.name, 'ru');
+  const nFav = RECIPES.filter(r => r.fav).length;
+  const onlyFav = UI.rfilter === 'fav';
+  const list = RECIPES.filter(r => !onlyFav || r.fav).sort(favFirst);
   $('#recipes').innerHTML = `
-    <p class="hint">Рецепт — это блюдо с продуктами на указанное число людей. В меню жми «+ из рецепта»: Котелок пересчитает на ваш состав и округлит вверх. Граммы продуктов из «Упаковок» превращаются в целые пачки. Любое блюдо из меню можно сохранить сюда звёздочкой ⭐.</p>
-    ${list.map(recipeHTML).join('') || '<div class="empty"><p>Рецептов пока нет.</p></div>'}
+    <p class="hint">Рецепт — блюдо с продуктами на указанное число людей. В меню жми «+ из рецепта» — Котелок пересчитает на ваш состав и округлит вверх. 🤍 — добавить в избранное, «✎ Изменить» — поправить рецепт. Блюдо из меню сохраняется сюда звёздочкой ⭐.</p>
+    <div class="seg" role="tablist">
+      <button class="${onlyFav ? '' : 'on'}" data-act="rfilterAll" role="tab" aria-selected="${!onlyFav}">Все <span class="badge">${RECIPES.length}</span></button>
+      <button class="${onlyFav ? 'on' : ''}" data-act="rfilterFav" role="tab" aria-selected="${onlyFav}">❤️ Избранные <span class="badge">${nFav}</span></button>
+    </div>
+    ${list.map(recipeHTML).join('') || (onlyFav
+      ? '<div class="empty"><h2>Пока пусто</h2><p>Нажми 🤍 у рецепта во вкладке «Все» — и он появится здесь.</p></div>'
+      : '<div class="empty"><p>Рецептов пока нет.</p></div>')}
     <button class="add big" data-act="addRecipe">+ Новый рецепт</button>
     <h3 style="font:400 22px var(--display);color:var(--pine);margin:22px 2px 4px">Упаковки</h3>
     <p class="hint" style="margin-top:0">Если в рецепте продукт указан в граммах и он есть в этом списке — в меню он попадёт целыми упаковками. Например, макароны 150 г × 8 чел. = 3 пачки (450 г).</p>
@@ -962,8 +993,8 @@ function libCtx(el) {
 }
 async function addFromRecipe(t, meal) {
   if (!RECIPES.length) { toast('Рецептов пока нет — загляни во вкладку «Рецепты»'); return; }
-  const list = [...RECIPES].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
-  const id = await ask({ title: 'Блюдо из рецепта', text: 'Выбери блюдо — дальше спрошу, на сколько человек.', options: list.map(r => ({ label: `${r.name} · на ${r.serves || 1} чел.`, value: r.id })) });
+  const list = [...RECIPES].sort((a, b) => (b.fav ? 1 : 0) - (a.fav ? 1 : 0) || a.name.localeCompare(b.name, 'ru'));
+  const id = await ask({ title: 'Блюдо из рецепта', text: 'Выбери блюдо — дальше спрошу, на сколько человек. ❤️ — избранные.', options: list.map(r => ({ label: `${r.fav ? '❤️ ' : ''}${r.name} · на ${r.serves || 1} чел.`, value: r.id })) });
   const r = recipeById(id); if (!r) return;
   const n = await ask({ title: r.name, text: 'На сколько человек готовим?', input: 'человек', value: String(t.people || t.basePeople || ''), ok: 'Добавить' });
   const people = num(n); if (!(people > 0)) return;
@@ -977,9 +1008,20 @@ async function saveAsRecipe(t, dish) {
   if (!dish.items.some(filled)) { toast('В блюде пока нет продуктов'); return; }
   const n = await ask({ title: 'Сохранить в рецепты', text: `«${dish.name || 'Блюдо без названия'}» — на сколько человек рассчитаны эти количества?`, input: 'человек', value: String(t.basePeople || ''), ok: 'Сохранить' });
   if (!(num(n) > 0)) return;
-  const r = { id: uid(), name: norm(dish.name) ? dish.name.trim() : 'Блюдо без названия', serves: String(num(n)), note: 'из похода «' + t.name + '»',
-    items: dish.items.filter(filled).map(i => ({ id: uid(), name: i.name.trim(), qty: i.qty, unit: i.unit })) };
-  RECIPES.push(r); UI.ropen[r.id] = true; touchLib(); toast(`Рецепт «${r.name}» сохранён`);
+  const name = norm(dish.name) ? dish.name.trim() : 'Блюдо без названия';
+  const items = dish.items.filter(filled).map(i => ({ id: uid(), name: i.name.trim(), qty: i.qty, unit: i.unit }));
+  const same = RECIPES.find(r => norm(r.name) === norm(name));
+  if (same) {
+    const how = await ask({ title: 'Такой рецепт уже есть', text: `«${same.name}» уже есть в рецептах. Что сделать?`, options: [
+      { label: `Обновить рецепт «${same.name}»`, value: 'update', primary: true }, { label: 'Сохранить как новый рецепт', value: 'new' }] });
+    if (!how) return;
+    if (how === 'update') {
+      same.serves = String(num(n)); same.items = items; same.note = 'обновлён из похода «' + t.name + '»';
+      touchLib(); toast(`Рецепт «${same.name}» обновлён ✓`); return;
+    }
+  }
+  const r = { id: uid(), name: same ? name + ' (новый)' : name, serves: String(num(n)), note: 'из похода «' + t.name + '»', items };
+  RECIPES.push(r); touchLib(); toast(`Рецепт «${r.name}» сохранён ✓`);
 }
 
 // ---------- общий рендер ----------
@@ -1018,7 +1060,16 @@ document.addEventListener('click', async e => {
     case 'fromRecipe': addFromRecipe(t, meal); return;
     case 'saveRecipe': saveAsRecipe(t, dish); return;
     case 'addRecipe': { const r = { id: uid(), name: '', serves: '1', items: [newItem()] }; RECIPES.push(r); UI.ropen[r.id] = true; touchLib(); renderRecipes(); $(`[data-k="rname:${r.id}"]`)?.focus(); return; }
-    case 'toggleRecipe': UI.ropen[lib.r.id] = !UI.ropen[lib.r.id]; saveLocal(); renderRecipes(); return;
+    case 'toggleRecipe': UI.ropen[lib.r.id] = !UI.ropen[lib.r.id]; saveLocal(); renderRecipes(); if (UI.ropen[lib.r.id]) $(`[data-recipe="${lib.r.id}"]`)?.scrollIntoView({ block: 'nearest' }); return;
+    case 'doneRecipe': {
+      const r = lib.r, keep = r.items.filter(filled); r.items = keep.length ? keep : [newItem()];
+      if (!norm(r.name)) r.name = 'Без названия';
+      UI.ropen[r.id] = false; touchLib(); renderRecipes(); $(`[data-recipe="${r.id}"]`)?.scrollIntoView({ block: 'nearest' });
+      toast(`Рецепт «${r.name}» сохранён ✓`); return;
+    }
+    case 'favRecipe': lib.r.fav = !lib.r.fav; touchLib(); keepFocus(renderRecipes); toast(lib.r.fav ? `«${lib.r.name}» — в избранном ❤️` : `«${lib.r.name}» убран из избранного`); return;
+    case 'rfilterAll': UI.rfilter = 'all'; saveLocal(); renderRecipes(); return;
+    case 'rfilterFav': UI.rfilter = 'fav'; saveLocal(); renderRecipes(); return;
     case 'copyRecipe': { const c = JSON.parse(JSON.stringify(lib.r)); c.id = uid(); c.name += ' (копия)'; c.items.forEach(i => i.id = uid()); RECIPES.push(c); UI.ropen[c.id] = true; touchLib(); renderRecipes(); return; }
     case 'delRecipe':
       if (!await ask({ title: 'Удалить рецепт?', text: `«${lib.r.name || 'Без названия'}» удалится из книги рецептов. Блюда, уже добавленные в меню, останутся.`, ok: 'Удалить', danger: true })) return;
